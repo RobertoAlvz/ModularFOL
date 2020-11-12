@@ -10,32 +10,53 @@ Inductive term : Type :=
   | Var (x : nat)
   | Func : forall f:Funcs, Vector.t term (f_ar f) -> term.
 
-Fixpoint subst_term (sigma : nat -> term) (s : term) : term := match s with 
+Fixpoint subst_term (sigma : nat -> term) (s : term) : term :=
+match s with 
   | Var n => sigma n
   | Func f args => Func f (Vector.map (subst_term sigma) args)
 end.
 
-Inductive formula : Type :=
-  | Bot
-  | Pred : forall (P : Preds), Vector.t term (p_ar P) -> formula
-  | Imp (p q : formula)
-  | Univ (p : formula).
+Variable formula : Type.
 
-Fixpoint subst_form (sigma : nat -> term) (s : formula) : formula := match s with
+Inductive f_atomic : Type -> Type :=
+  | Pred : forall (P : Preds), Vector.t term (p_ar P) -> f_atomic formula
+  | Bot : f_atomic formula.
+
+Definition subst_atomic (sigma : nat -> term) (s : f_atomic formula) : f_atomic formula :=
+match s with
   | Bot => Bot
   | Pred P args => Pred P (Vector.map (subst_term sigma) args)
-  | Imp p q => Imp (subst_form sigma p) (subst_form sigma q)
-  | Univ p => Univ (subst_form (fun n => sigma (S n)) p)
 end.
+
+Inductive f_implicative : Type -> Type :=
+  | Imp : formula -> formula -> f_implicative formula.
+
+(* 
+Fixpoint subst_implicative (sigma : nat -> term) (s : formula_implicative formula) : formula_implicative formula :=
+match s with
+  | Imp p q => Imp (subst_implicative sigma p) (subst_implicative sigma q)
+end.
+ *)
+
+Inductive f_universal (formula : Type) :=
+  | Univ : formula -> f_universal formula.
+(* 
+  Fixpoint subst_universal (sigma : nat -> term) (s : formula) : formula :=
+  match s with
+    | Univ p => Univ (subst_universal (fun n => sigma (S n)) p)
+  end.
+ *)
+
 
 Notation "p ~> q" := (Imp p q) (at level 51, right associativity).
 Notation "! p" := (p ~> Bot) (at level 35, right associativity).
-
+(* 
 Definition instantiate t := subst_form (fun n => match n with 0 => t | n => Var n end).
 Definition shifted := map (subst_form (fun n => Var (S n))).
-
+ *)
 Reserved Notation "H |- p" (at level 70).
 Implicit Types H : list formula.
+(* 
 Inductive nd H : formula -> Prop :=
   | ndHyp p  : In p H -> H |- p
   | ndExp p  : H |- Bot  ->  H |- p
@@ -44,6 +65,11 @@ Inductive nd H : formula -> Prop :=
   | ndUI p : shifted H |- p -> H |- Univ p
   | ndUE t p : H |- Univ p -> H |- instantiate t p 
 where "H |- p" := (nd H p).
+ *)
+Inductive deduction_atomic H : f_atomic formula -> Prop :=
+  | ndHyp p  : In p H -> H |- p
+  | ndExp p  : H |- Bot  ->  H |- p
+where "H |- p" := (deduction_atomic H p).
 
 Theorem weakening A B p : A |- p -> incl A B -> B |- p.
 Proof. induction 1; intro Hinc.
