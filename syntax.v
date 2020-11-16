@@ -1,5 +1,10 @@
 Require Export unscoped.
 Require Export header_extensible.
+Require Import Coq.Vectors.Vector.
+Class Signature := B_S { Funcs : Type; fun_ar : Funcs -> nat ; Preds : Type; pred_ar : Preds -> nat }.
+Context {Sigma : Signature}.
+Definition V n t := Vector.t t n.
+Definition V_map {term : Type} (f : term -> term ) {n:nat} (v : Vector.t term n) := Vector.map f v.
 
 Section term.
 Inductive term  : Type :=
