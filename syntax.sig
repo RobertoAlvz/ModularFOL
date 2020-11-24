@@ -2,18 +2,18 @@ term  : Type
 form  : Type
 Funcs : Type
 Preds : Type
+vect : Functor
 
-Func (f : Funcs) : "V f" (term) -> term
-Pred (p : Preds) : "V p" (term) -> form
+Func (f : Funcs) : "vect (fun_ar f)" (term) -> term
+Pred (p : Preds) : "vect (pred_ar p)" (term) -> form
 
-begin imp
+begin implicative
     Fal : form
     Impl : form -> form -> form
-end imp
+end implicative
 
 begin univ
     All  : (term -> form) -> form
 end univ
 
-compose implicative := imp
-compose full := imp :+: univ
+full := imp :+: univ
