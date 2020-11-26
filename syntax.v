@@ -28,11 +28,11 @@ Definition upId_term_term  (sigma : ( fin ) -> term ) (Eq : forall x, sigma x = 
   | 0  => eq_refl
   end.
 
-(* Fixpoint idSubst_term  (sigmaterm : ( fin ) -> term ) (Eqterm : forall x, sigmaterm x = (var_term ) x) (s : term ) : subst_term sigmaterm s = s :=
+Fixpoint idSubst_term  (sigmaterm : ( fin ) -> term ) (Eqterm : forall x, sigmaterm x = (var_term ) x) (s : term ) : subst_term sigmaterm s = s :=
     match s return subst_term sigmaterm s = s with
     | var_term  s => Eqterm s
     | Func  f s0 => congr_Func ((vect_id (idSubst_term sigmaterm Eqterm)) s0)
-    end. *)
+    end.
 
 Definition upExt_term_term   (sigma : ( fin ) -> term ) (tau : ( fin ) -> term ) (Eq : forall x, sigma x = tau x) : forall x, (up_term_term sigma) x = (up_term_term tau) x :=
   fun n => match n with
