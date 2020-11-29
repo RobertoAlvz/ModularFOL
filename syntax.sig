@@ -5,7 +5,6 @@ Preds : Type
 vect : Functor
 
 Func (f : Funcs) : "vect (fun_ar f)" (term) -> term
-Pred (p : Preds) : "vect (pred_ar p)" (term) -> form
 
 begin implicative
     Fal : form
@@ -13,6 +12,7 @@ begin implicative
 end implicative
 
 begin univ
+    Pred (p : Preds) : "vect (pred_ar p)" (term) -> form
     All  : (term -> form) -> form
 end univ
 

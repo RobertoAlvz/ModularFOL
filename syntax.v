@@ -1,6 +1,7 @@
 Require Export unscoped header_extensible.
 
-(*Require Export univ implicative.*)
+(* Require Export univ implicative.
+ *)
 
 Class Signature := B_S { Funcs : Type; fun_ar : Funcs -> nat ; Preds : Type; pred_ar : Preds -> nat }.
 Context {Sigma : Signature}.
@@ -27,12 +28,12 @@ Definition upId_term_term  (sigma : ( fin ) -> term ) (Eq : forall x, sigma x = 
   | S fin_n => (ap) (subst_term ((funcomp) (var_term ) (shift))) (Eq fin_n)
   | 0  => eq_refl
   end.
-
+(* 
 Fixpoint idSubst_term  (sigmaterm : ( fin ) -> term ) (Eqterm : forall x, sigmaterm x = (var_term ) x) (s : term ) : subst_term sigmaterm s = s :=
     match s return subst_term sigmaterm s = s with
     | var_term  s => Eqterm s
     | Func  f s0 => congr_Func ((vect_id (idSubst_term sigmaterm Eqterm)) s0)
-    end.
+    end. 
 
 Definition upExt_term_term   (sigma : ( fin ) -> term ) (tau : ( fin ) -> term ) (Eq : forall x, sigma x = tau x) : forall x, (up_term_term sigma) x = (up_term_term tau) x :=
   fun n => match n with
@@ -40,7 +41,7 @@ Definition upExt_term_term   (sigma : ( fin ) -> term ) (tau : ( fin ) -> term )
   | 0  => eq_refl
   end.
 
-(* Fixpoint ext_term   (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) (Eqterm : forall x, sigmaterm x = tauterm x) (s : term ) : subst_term sigmaterm s = subst_term tauterm s :=
+Fixpoint ext_term   (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) (Eqterm : forall x, sigmaterm x = tauterm x) (s : term ) : subst_term sigmaterm s = subst_term tauterm s :=
     match s return subst_term sigmaterm s = subst_term tauterm s with
     | var_term  s => Eqterm s
     | Func  f s0 => congr_Func ((vect_ext (ext_term sigmaterm tauterm Eqterm)) s0)
@@ -56,7 +57,7 @@ Definition up_subst_subst_term_term    (sigma : ( fin ) -> term ) (tauterm : ( f
   fun n => match n with
   | S fin_n => (eq_trans) (compSubstSubst_term ((funcomp) (var_term ) (shift)) (up_term_term tauterm) ((funcomp) (up_term_term tauterm) (shift)) (fun x => eq_refl) (sigma fin_n)) ((eq_trans) ((eq_sym) (compSubstSubst_term tauterm ((funcomp) (var_term ) (shift)) ((funcomp) (subst_term ((funcomp) (var_term ) (shift))) tauterm) (fun x => eq_refl) (sigma fin_n))) ((ap) (subst_term ((funcomp) (var_term ) (shift))) (Eq fin_n)))
   | 0  => eq_refl
-  end. 
+  end.
 
 Lemma instId_term  : subst_term (var_term ) = id .
 Proof. exact ((FunctionalExtensionality.functional_extensionality _ _ ) (fun x => idSubst_term (var_term ) (fun n => eq_refl) ((id) x))). Qed.
@@ -84,12 +85,19 @@ Variable ext_form : forall   (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -
 Variable compSubstSubst_form : forall    (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) (thetaterm : ( fin ) -> term ) (Eqterm : forall x, ((funcomp) (subst_term tauterm) sigmaterm) x = thetaterm x) (s : form ), subst_form tauterm (subst_form sigmaterm s) = subst_form thetaterm s.
 
 Inductive form_univ  : Type :=
+  | Pred : forall (p : Preds), ( vect (pred_ar p) (term  ) ) -> form_univ 
   | All : ( form   ) -> form_univ .
 
 Variable retract_form_univ : retract form_univ form.
 
+Definition Pred_  (p : Preds) (s0 : vect (pred_ar p) (term  )) : _ :=
+  inj (Pred p s0).
+
 Definition All_  (s0 : form  ) : _ :=
   inj (All s0).
+
+Lemma congr_Pred_ { p : Preds }  { s0 : vect (pred_ar p) (term  ) } { t0 : vect (pred_ar p) (term  ) } (H1 : s0 = t0) : Pred_  p s0 = Pred_  p t0 .
+Proof. congruence. Qed.
 
 Lemma congr_All_  { s0 : form   } { t0 : form   } (H1 : s0 = t0) : All_  s0 = All_  t0 .
 Proof. congruence. Qed.
@@ -98,23 +106,27 @@ Proof. congruence. Qed.
 
 Definition subst_form_univ   (sigmaterm : ( fin ) -> term ) (s : form_univ ) : form  :=
     match s return form  with
+    | Pred  p s0 => Pred_  p ((vect_map (subst_term sigmaterm)) s0)
     | All  s0 => All_  ((subst_form (up_term_term sigmaterm)) s0)
     end.
 
 Variable retract_subst_form : forall   (sigmaterm : ( fin ) -> term ) s, subst_form sigmaterm (inj s) = subst_form_univ sigmaterm s.
 
-Definition idSubst_form_univ  (sigmaterm : ( fin ) -> term ) (Eqterm : forall x, sigmaterm x = (var_term ) x) (s : form_univ ) : subst_form_univ sigmaterm s = inj s :=
+(* Definition idSubst_form_univ  (sigmaterm : ( fin ) -> term ) (Eqterm : forall x, sigmaterm x = (var_term ) x) (s : form_univ ) : subst_form_univ sigmaterm s = inj s :=
     match s return subst_form_univ sigmaterm s = inj s with
+    | Pred  p s0 => congr_Pred_ ((vect_id (idSubst_term sigmaterm Eqterm)) s0)
     | All  s0 => congr_All_ ((idSubst_form (up_term_term sigmaterm) (upId_term_term (_) Eqterm)) s0)
-    end.
+    end. 
 
 Definition ext_form_univ   (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) (Eqterm : forall x, sigmaterm x = tauterm x) (s : form_univ ) : subst_form_univ sigmaterm s = subst_form_univ tauterm s :=
     match s return subst_form_univ sigmaterm s = subst_form_univ tauterm s with
+    | Pred  p s0 => congr_Pred_ ((vect_ext (ext_term sigmaterm tauterm Eqterm)) s0)
     | All  s0 => congr_All_ ((ext_form (up_term_term sigmaterm) (up_term_term tauterm) (upExt_term_term (_) (_) Eqterm)) s0)
     end.
 
-(* Definition compSubstSubst_form_univ    (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) (thetaterm : ( fin ) -> term ) (Eqterm : forall x, ((funcomp) (subst_term tauterm) sigmaterm) x = thetaterm x) (s : form_univ ) : subst_form tauterm (subst_form_univ sigmaterm s) = subst_form_univ thetaterm s :=
+Definition compSubstSubst_form_univ    (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) (thetaterm : ( fin ) -> term ) (Eqterm : forall x, ((funcomp) (subst_term tauterm) sigmaterm) x = thetaterm x) (s : form_univ ) : subst_form tauterm (subst_form_univ sigmaterm s) = subst_form_univ thetaterm s :=
     match s return subst_form tauterm (subst_form_univ sigmaterm s) = subst_form_univ thetaterm s with
+    | Pred  p s0 => (eq_trans) (retract_subst_form (_) (Pred (_))) (congr_Pred_ ((vect_comp (compSubstSubst_term sigmaterm tauterm thetaterm Eqterm)) s0))
     | All  s0 => (eq_trans) (retract_subst_form (_) (All (_))) (congr_All_ ((compSubstSubst_form (up_term_term sigmaterm) (up_term_term tauterm) (up_term_term thetaterm) (up_subst_subst_term_term (_) (_) (_) Eqterm)) s0))
     end.
 
@@ -129,6 +141,7 @@ Proof. exact ((FunctionalExtensionality.functional_extensionality _ _ ) (fun n =
 
 Definition isIn_form_form_univ (s : form) (t : form_univ) : Prop :=
   match t with
+  | Pred t0  => False
   | All t0  => s = t0
   end.
 *)
@@ -143,7 +156,7 @@ Variable idSubst_form : forall  (sigmaterm : ( fin ) -> term ) (Eqterm : forall 
 
 Variable ext_form : forall   (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) (Eqterm : forall x, sigmaterm x = tauterm x) (s : form ), subst_form sigmaterm s = subst_form tauterm s.
 
-(* Variable compSubstSubst_form : forall    (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) (thetaterm : ( fin ) -> term ) (Eqterm : forall x, ((funcomp) (subst_term tauterm) sigmaterm) x = thetaterm x) (s : form ), subst_form tauterm (subst_form sigmaterm s) = subst_form thetaterm s. *)
+Variable compSubstSubst_form : forall    (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) (thetaterm : ( fin ) -> term ) (Eqterm : forall x, ((funcomp) (subst_term tauterm) sigmaterm) x = thetaterm x) (s : form ), subst_form tauterm (subst_form sigmaterm s) = subst_form thetaterm s.
 
 Inductive form_implicative  : Type :=
   | Fal : form_implicative 
@@ -185,7 +198,7 @@ Definition ext_form_implicative   (sigmaterm : ( fin ) -> term ) (tauterm : ( fi
     | Impl  s0 s1 => congr_Impl_ ((ext_form sigmaterm tauterm Eqterm) s0) ((ext_form sigmaterm tauterm Eqterm) s1)
     end.
 
-(* Definition compSubstSubst_form_implicative    (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) (thetaterm : ( fin ) -> term ) (Eqterm : forall x, ((funcomp) (subst_term tauterm) sigmaterm) x = thetaterm x) (s : form_implicative ) : subst_form tauterm (subst_form_implicative sigmaterm s) = subst_form_implicative thetaterm s :=
+Definition compSubstSubst_form_implicative    (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) (thetaterm : ( fin ) -> term ) (Eqterm : forall x, ((funcomp) (subst_term tauterm) sigmaterm) x = thetaterm x) (s : form_implicative ) : subst_form tauterm (subst_form_implicative sigmaterm s) = subst_form_implicative thetaterm s :=
     match s return subst_form tauterm (subst_form_implicative sigmaterm s) = subst_form_implicative thetaterm s with
     | Fal   => (eq_trans) (retract_subst_form (_) (Fal )) (congr_Fal_ )
     | Impl  s0 s1 => (eq_trans) (retract_subst_form (_) (Impl (_) (_))) (congr_Impl_ ((compSubstSubst_form sigmaterm tauterm thetaterm Eqterm) s0) ((compSubstSubst_form sigmaterm tauterm thetaterm Eqterm) s1))
@@ -204,18 +217,14 @@ Definition isIn_form_form_implicative (s : form) (t : form_implicative) : Prop :
   match t with
   | Fal   => False
   | Impl t0 t1  => or (s = t0) (s = t1)
-  end. *)
+  end.
 
 End form_implicative.
 
 Section form.
 Inductive form  : Type :=
-  | Pred : forall (p : Preds), ( vect (pred_ar p) (term  ) ) -> form 
   | In_form_implicative : ( form_implicative form  ) -> form 
   | In_form_univ : ( form_univ form  ) -> form .
-
-Lemma congr_Pred { p : Preds }  { s0 : vect (pred_ar p) (term  ) } { t0 : vect (pred_ar p) (term  ) } (H1 : s0 = t0) : Pred  p s0 = Pred  p t0 .
-Proof. congruence. Qed.
 
 Lemma congr_In_form_implicative  { s0 : form_implicative form  } { t0 : form_implicative form  } (H1 : s0 = t0) : In_form_implicative  s0 = In_form_implicative  t0 .
 Proof. congruence. Qed.
@@ -239,30 +248,27 @@ end) (fun s => eq_refl) (fun s t => match t with
 | _ => some_none_explosion
 end) .
 
-(* Fixpoint subst_form   (sigmaterm : ( fin ) -> term ) (s : form ) : form  :=
-    match s return form  with
-    | Pred  p s0 =>   p ((vect_map (subst_term sigmaterm)) s0)
-    | In_form_implicative  s0 =>   ((subst_form_implicative form sigmaterm) s0)
-    | In_form_univ  s0 =>   ((subst_form_univ form up_term_form sigmaterm) s0)
-    end.
+Check subst_form_implicative.
 
+Fixpoint subst_form   (sigmaterm : ( fin ) -> term ) (s : form ) : form  :=
+    match s return form  with
+    | In_form_implicative  s0 =>   subst_form_implicative form subst_form _ sigmaterm s0
+    | In_form_univ  s0 =>   ((subst_form_univ form subst_form _ sigmaterm) s0)
+    end.
+(*
 Fixpoint idSubst_form  (sigmaterm : ( fin ) -> term ) (Eqterm : forall x, sigmaterm x = (var_term ) x) (s : form ) : subst_form sigmaterm s = s :=
     match s return subst_form sigmaterm s = s with
-    | Pred  p s0 =>  ((vect_id (idSubst_term sigmaterm Eqterm)) s0)
     | In_form_implicative  s0 =>  ((idSubst_form_implicative form sigmaterm Eqterm) s0)
     | In_form_univ  s0 =>  ((idSubst_form_univ form up_term_form upId_term_form sigmaterm Eqterm) s0)
     end.
 
 Fixpoint ext_form   (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) (Eqterm : forall x, sigmaterm x = tauterm x) (s : form ) : subst_form sigmaterm s = subst_form tauterm s :=
     match s return subst_form sigmaterm s = subst_form tauterm s with
-    | Pred  p s0 =>  ((vect_ext (ext_term sigmaterm tauterm Eqterm)) s0)
     | In_form_implicative  s0 =>  ((ext_form_implicative form sigmaterm tauterm Eqterm) s0)
     | In_form_univ  s0 =>  ((ext_form_univ form up_term_form upExt_term_form sigmaterm tauterm Eqterm) s0)
     end.
-
 Fixpoint compSubstSubst_form    (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) (thetaterm : ( fin ) -> term ) (Eqterm : forall x, ((funcomp) (subst_term tauterm) sigmaterm) x = thetaterm x) (s : form ) : subst_form tauterm (subst_form sigmaterm s) = subst_form thetaterm s :=
     match s return subst_form tauterm (subst_form sigmaterm s) = subst_form thetaterm s with
-    | Pred  p s0 =>  ((vect_comp (compSubstSubst_term sigmaterm tauterm thetaterm Eqterm)) s0)
     | In_form_implicative  s0 =>  ((compSubstSubst_form_implicative form sigmaterm tauterm thetaterm Eqterm) s0)
     | In_form_univ  s0 =>  ((compSubstSubst_form_univ form up_term_form up_subst_subst_term_form sigmaterm tauterm thetaterm Eqterm) s0)
     end.
@@ -274,8 +280,9 @@ Lemma compComp_form    (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term
 Proof. exact (compSubstSubst_form sigmaterm tauterm (_) (fun n => eq_refl) s). Qed.
 
 Lemma compComp'_form    (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) : (funcomp) (subst_form tauterm) (subst_form sigmaterm) = subst_form ((funcomp) (subst_term tauterm) sigmaterm) .
-Proof. exact ((FunctionalExtensionality.functional_extensionality _ _ ) (fun n => compComp_form sigmaterm tauterm n)). Qed. *)
+Proof. exact ((FunctionalExtensionality.functional_extensionality _ _ ) (fun n => compComp_form sigmaterm tauterm n)). Qed.
 
+*)
 End form.
 
 
@@ -298,7 +305,7 @@ End form.
 
 Global Instance Subst_term   : Subst1 (( fin ) -> term ) (term ) (term ) := @subst_term   .
 
-(* Global Instance Subst_form   : Subst1 (( fin ) -> term ) (form ) (form ) := @subst_form   . *)
+Global Instance Subst_form   : Subst1 (( fin ) -> term ) (form ) (form ) := @subst_form   .
 
 Global Instance VarInstance_term  : Var (fin) (term ) := @var_term  .
 
@@ -328,14 +335,14 @@ Notation "s [ sigmaterm ]" := (subst_form_implicative sigmaterm s) (at level 7, 
 
 Notation "[ sigmaterm ]" := (subst_form_implicative sigmaterm) (at level 1, left associativity, only printing) : fscope.
 
-(* Notation "s [ sigmaterm ]" := (subst_form sigmaterm s) (at level 7, left associativity, only printing) : subst_scope.
+Notation "s [ sigmaterm ]" := (subst_form sigmaterm s) (at level 7, left associativity, only printing) : subst_scope.
 
 Notation "[ sigmaterm ]" := (subst_form sigmaterm) (at level 1, left associativity, only printing) : fscope.
 
 Ltac auto_unfold := repeat unfold subst1,  subst2,  Subst1,  Subst2,  ids,  ren1,  ren2,  Ren1,  Ren2,  Subst_term,  Subst_form,  VarInstance_term.
 
 Tactic Notation "auto_unfold" "in" "*" := repeat unfold subst1,  subst2,  Subst1,  Subst2,  ids,  ren1,  ren2,  Ren1,  Ren2,  Subst_term,  Subst_form,  VarInstance_term in *.
-
+(*** 
 Ltac asimpl' := repeat first [progress rewrite ?instId_term| progress rewrite ?compComp_term| progress rewrite ?compComp'_term| progress rewrite ?instId_form_univ| progress rewrite ?compComp_form_univ| progress rewrite ?compComp'_form_univ| progress rewrite ?instId_form_implicative| progress rewrite ?compComp_form_implicative| progress rewrite ?compComp'_form_implicative| progress rewrite ?instId_form| progress rewrite ?compComp_form| progress rewrite ?compComp'_form| progress rewrite ?varL_term| progress (unfold up_ren, up_term_term)| progress (cbn [subst_term subst_form_univ subst_form_implicative subst_form])| fsimpl].
 
 Ltac asimpl := repeat try unfold_funcomp; auto_unfold in *; asimpl'; repeat try unfold_funcomp.
@@ -345,7 +352,8 @@ Tactic Notation "asimpl" "in" hyp(J) := revert J; asimpl; intros J.
 Tactic Notation "auto_case" := auto_case (asimpl; cbn; eauto).
 
 Tactic Notation "asimpl" "in" "*" := auto_unfold in *; repeat first [progress rewrite ?instId_term in *| progress rewrite ?compComp_term in *| progress rewrite ?compComp'_term in *| progress rewrite ?instId_form_univ in *| progress rewrite ?compComp_form_univ in *| progress rewrite ?compComp'_form_univ in *| progress rewrite ?instId_form_implicative in *| progress rewrite ?compComp_form_implicative in *| progress rewrite ?compComp'_form_implicative in *| progress rewrite ?instId_form in *| progress rewrite ?compComp_form in *| progress rewrite ?compComp'_form in *| progress rewrite ?varL_term in *| progress (unfold up_ren, up_term_term in * )| progress (cbn [subst_term subst_form_univ subst_form_implicative subst_form] in * )| fsimpl in *].
-
+ ***)
 Ltac substify := auto_unfold.
 
-Ltac renamify := auto_unfold. *)
+Ltac renamify := auto_unfold.
+
