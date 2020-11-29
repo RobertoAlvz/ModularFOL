@@ -4,44 +4,42 @@ Section implicative.
 
   Variable form : Type.
 
-  Variable retract_implicative : retract (form_implicative (form_implicative form)) (form_implicative form).
-  Notation "« p »" := (inj p).
-  Notation "p ~> q" := («Impl _ p q») (at level 60).
-  Notation "⊥" := (Fal _).
-  Notation "¬ p" := (p ~> ⊥) (at level 60).
-
-
   Variable count : form -> nat.
   Definition count_imp (p : form_implicative form) := match p with
-    | ⊥ => 1
+    | Fal _  => 1
     | Impl _ p q => count p + count q
   end.
 
-  Variable nd : list form -> form -> Prop.
+  Variable retract_implicative : retract (form_implicative form) form.
+  Notation "p ~> q" := (Impl_ _ _ p q) (at level 60).
+  Notation "⊥" := (Fal_ _ _).
+  Notation "¬ p" := (p ~> ⊥) (at level 60).
+
   Reserved Notation "A |- p" (at level 70).
-  Inductive nd_imp (A : list (form_implicative form)) : form_implicative form -> Prop :=
-    | ndHyp p : In p A -> A |- p
+  Inductive nd_imp (A : list form) : form -> Prop :=
+    | ndHI p : In p A -> A |- p
     | ndExp p : A |- ⊥ -> A |- p
     | ndII p q : (p :: A) |- q -> A |- p ~> q
     | ndIE p q : A |- p ~> q -> A |- p -> A |- q
   where "A |- p" := (nd_imp A p).
 
-  Lemma weakening A B p : A |- p -> incl A B -> B |- p.
-  Proof. induction 1; intro Hinc.
-    -apply ndHyp. now apply Hinc.
+  Lemma weakening_imp A B p : A |- p -> incl A B -> B |- p.
+  Proof. intro. revert B. induction H; intros B Hinc.
+    -apply ndHI. now apply Hinc.
     -apply ndExp. now apply IHnd_imp.
-    -apply ndII. admit.
+    -apply ndII, (IHnd_imp (p::B)). { apply incl_cons. now left. now apply incl_tl. }
     -apply (ndIE _ p). now apply IHnd_imp1. now apply IHnd_imp2.
-  Admitted.
+  Qed.
 
-  Lemma double_neg A p : A |- p -> A |- ¬¬p.
+  Lemma double_neg_imp A p : A |- p -> A |- ¬¬p.
   Proof. induction 1; apply ndII.
-    -apply (ndIE _ p). { apply ndHyp. now left. } { apply ndHyp. now right. }
-    -apply (weakening A). assumption. { intros a Hin. now right. }
-    -apply (ndIE _ (p~>q)). { apply ndHyp. now left. }
-     apply ndII, (weakening (p::A)). assumption. { intros a [Hhd | Htl]. now left. right. now right. }
-    -apply (ndIE _ q). { apply ndHyp. now left. }
-     apply (weakening A). { now apply (ndIE _ p). } { intros a Hin. now right. }
+    -apply (ndIE _ p). { apply ndHI. now left. } { apply ndHI. now right. }
+    -apply (weakening_imp A). assumption. now apply incl_tl.
+    -apply (ndIE _ (p~>q)). { apply ndHI. now left. }
+     apply ndII, (weakening_imp (p::A)). assumption.
+     { apply incl_cons. now left. now repeat apply incl_tl. }
+    -apply (ndIE _ q). { apply ndHI. now left. }
+     apply (weakening_imp A). now apply (ndIE _ p). now apply incl_tl.
   Qed.
 
 End implicative.
@@ -49,42 +47,75 @@ End implicative.
 Section universals.
 
   Variable form : Type.
+  Variable subst_form : (fin -> term) -> form -> form.
 
   Variable count : form -> nat.
   Definition count_univ (p : form_univ form) : nat := match p with 
+    | Pred _ _ _ => 1
     | All _ p => count p
   end.
 
-  Variable retract_univ : retract (form_univ (form_univ form)) (form_univ form).
-  Notation "« p »" := (inj p).
-  Notation "∀ p ":= («All _ p») (at level 60).
+  Variable retract_univ : retract (form_univ form) form.
+  Notation "∀ p ":= (All_ _ _ p) (at level 60).
 
   Variable nd : list form -> form -> Prop.
-  Definition shifted : list (form_univ form) -> list (form_univ form)
-    := fun l => l.
-  Definition subst : form_univ form -> term -> form_univ form
-    := fun f t => f.
+
+  Definition up_ctx (A : list form) := map (subst_form (S >> var_term)) A.
   Reserved Notation "A |- p" (at level 70).
-  Inductive ndU (A : list (form_univ form)) : form_univ form -> Prop :=
-    | ndUI p : shifted A |- p -> A |- ∀ p
-    | ndUE p t : A |- ∀ p -> A |- subst p t
-  where "A |- p" := (ndU A p).
+  Inductive nd_univ (A : list form) : form -> Prop :=
+    | ndHU p : In p A -> A |- p
+    | ndUI p : up_ctx A |- p -> A |- ∀ p
+    | ndUE p t : A |- ∀ p -> A |- subst_form (t ..) p
+  where "A |- p" := (nd_univ A p).
 
   Lemma weakening_univ A B p : A |- p -> incl A B -> B |- p.
-  Proof.
-  Admitted.
-(* 
-  Lemma double_neg A p : A |- p -> A |- ¬¬p.
-  Proof.
-  Admitted. *)
+  Proof. intro. revert B. induction H; intros B Hinc.
+    -apply ndHU. now apply Hinc.
+    -apply ndUI, (IHnd_univ (up_ctx B)). unfold up_ctx. now apply incl_map.
+    -apply ndUE. now apply IHnd_univ.
+  Qed.
+
+  Variable retract_implicative : retract (form_implicative form) form.
+  Notation "p ~> q" := (Impl_ _ _ p q) (at level 60).
+  Notation "⊥" := (Fal_ _ _).
+  Notation "¬ p" := (p ~> ⊥) (at level 60).
+
+  Variable equiv_nd : forall A p, nd_imp _ _ A p <-> nd_univ A p.
+  Lemma double_neg_univ A p : A |- p -> A |- ¬¬p.
+  Proof. induction 1; apply equiv_nd, ndII.
+    -apply (ndIE _ _ _ p). { apply ndHI. now left. } { apply ndHI. now right. }
+    -apply (ndIE _ _ _ (∀ p)). { apply ndHI. now left. }
+      { apply equiv_nd, ndUI, (weakening_univ (up_ctx A)). assumption.
+        unfold up_ctx. now apply incl_map, incl_tl. }
+    -apply (ndIE _ _ _ (subst_form (t ..) p)). { apply ndHI. now left. }
+      { apply equiv_nd, ndUE, (weakening_univ A). assumption. now apply incl_tl. }
+  Qed.
 
 End universals.
 
 Fixpoint count (p : form) := match p with 
-  | Pred _ _ => 1
   | In_form_implicative p => count_imp _ count p
   | In_form_univ p => count_univ _ count p
 end.
 
-Compute (count (inj (All _ (Impl _ (Fal _) (Fal _))))).
+Definition nd (A : list form) (p : form) : Prop := match p with
+  | In_form_implicative p => nd_imp _ _ A (In_form_implicative p)
+  | In_form_univ p => nd_univ _ subst_form _ A (In_form_univ p)
+end.
+Notation "A |- p" := (nd A p) (at level 70).
 
+Lemma weakening A B p : A |- p -> incl A B -> B |- p.
+Proof. destruct p.
+  -apply weakening_imp.
+  -apply weakening_univ.
+Qed.
+
+
+Notation "p ~> q" := (Impl_ _ _ p q) (at level 60).
+Notation "⊥" := (Fal_ _ _).
+Notation "¬ p" := (p ~> ⊥) (at level 60).
+Lemma double_neg A p : A |- p -> A |- ¬¬p.
+Proof. destruct p.
+  -apply double_neg_imp.
+  -Check double_neg_univ.
+Admitted.
