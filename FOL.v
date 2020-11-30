@@ -1,19 +1,21 @@
 Require Export syntax.
 
+
+Notation "p ~> q" := (Impl_ _ _ p q) (at level 60).
+Notation "⊥" := (Fal_ _ _).
+Notation "¬ p" := (p ~> ⊥) (at level 60).
+Notation "∀ p ":= (All_ _ _ p) (at level 60).
+
 Section implicative.
 
   Variable form : Type.
+  Variable retract_implicative : retract (form_implicative form) form.
 
   Variable count : form -> nat.
   Definition count_imp (p : form_implicative form) := match p with
     | Fal _  => 1
     | Impl _ p q => count p + count q
   end.
-
-  Variable retract_implicative : retract (form_implicative form) form.
-  Notation "p ~> q" := (Impl_ _ _ p q) (at level 60).
-  Notation "⊥" := (Fal_ _ _).
-  Notation "¬ p" := (p ~> ⊥) (at level 60).
 
   Reserved Notation "A |- p" (at level 70).
   Inductive nd_imp (A : list form) : form -> Prop :=
@@ -47,16 +49,15 @@ End implicative.
 Section universals.
 
   Variable form : Type.
+  Variable retract_univ : retract (form_univ form) form.
   Variable subst_form : (fin -> term) -> form -> form.
+  Variable retract_implicative : retract (form_implicative form) form.
 
   Variable count : form -> nat.
   Definition count_univ (p : form_univ form) : nat := match p with 
     | Pred _ _ _ => 1
     | All _ p => count p
   end.
-
-  Variable retract_univ : retract (form_univ form) form.
-  Notation "∀ p ":= (All_ _ _ p) (at level 60).
 
   Variable nd : list form -> form -> Prop.
 
@@ -74,11 +75,6 @@ Section universals.
     -apply ndUI, (IHnd_univ (up_ctx B)). unfold up_ctx. now apply incl_map.
     -apply ndUE. now apply IHnd_univ.
   Qed.
-
-  Variable retract_implicative : retract (form_implicative form) form.
-  Notation "p ~> q" := (Impl_ _ _ p q) (at level 60).
-  Notation "⊥" := (Fal_ _ _).
-  Notation "¬ p" := (p ~> ⊥) (at level 60).
 
   Variable equiv_nd : forall A p, nd_imp _ _ A p <-> nd_univ A p.
   Lemma double_neg_univ A p : A |- p -> A |- ¬¬p.
@@ -110,10 +106,6 @@ Proof. destruct p.
   -apply weakening_univ.
 Qed.
 
-
-Notation "p ~> q" := (Impl_ _ _ p q) (at level 60).
-Notation "⊥" := (Fal_ _ _).
-Notation "¬ p" := (p ~> ⊥) (at level 60).
 Lemma double_neg A p : A |- p -> A |- ¬¬p.
 Proof. destruct p.
   -apply double_neg_imp.
