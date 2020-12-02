@@ -30,7 +30,6 @@ Section implicative.
     | ndII p q : (p :: A) ⊢ q -> A ⊢I p ~> q
     | ndIE p q : A ⊢ p ~> q -> A ⊢ p -> A ⊢I q
   where "A ⊢I p" := (nd_imp A p).
-  Variable agree : forall A p, nd A p -> A ⊢I p.
 
   Variable weakening : forall A B p, A ⊢ p -> incl A B -> B ⊢ p.
   Lemma weakening_imp A B p : A ⊢I p -> incl A B -> B ⊢I p.
@@ -41,12 +40,21 @@ Section implicative.
     -apply (ndIE _ p). now apply (weakening A B (p~>q)). now apply (weakening A).
   Qed.
 
-(*   Lemma double_neg_imp A p : A ⊢ p -> A ⊢ ¬¬p.
-  Proof. apply (ndIE _ p), ndII, ndII. apply (ndIE _ p).
-    { apply ndHI. now left. }
-    { apply ndHI. right. now left. }
+  Variable translate : form -> form.
+  Definition translate_imp (p : form_implicative form) := match p with
+    | Fal _ => Impl _ (¬⊥) (⊥)
+    | Impl _ p q => Impl _ (translate p) (translate q)
+  end.
+
+  Variable agree : forall A p, nd A p <-> A ⊢I p.
+  Variable double_neg : forall A p, A ⊢ p -> A ⊢ translate p.
+  Lemma double_neg_imp A p : A ⊢I p -> A ⊢I translate p.
+  Proof. induction 1; apply agree, double_neg, agree.
+    -now apply ndHI.
+    -now apply ndExp.
+    -now apply ndII.
+    -now apply (ndIE _ p).
   Qed.
- *)
 End implicative.
 
 Section universals.
@@ -77,11 +85,22 @@ Section universals.
     -apply ndUE. now apply (weakening A).
   Qed.
 
- (*  Variable retract_implicative : retract (form_implicative form) form.
-  Variable equiv_nd : forall A p, nd_imp _ _ A p <-> nd_univ A p.
-  Lemma double_neg_univ A (p : form) : A ⊢ p -> A ⊢ ¬¬( p).
-  Proof. intro. apply equiv_nd. apply (double_neg_imp _ _ A (p)). now apply equiv_nd.
-  Qed. *)
+
+  Variable retract_implicative : retract (form_implicative form) form.
+  Variable retract_imp2univ : retract (form_implicative (form_univ form)) (form_univ form).
+  Variable translate : form -> form.
+  Definition translate_univ (p : form_univ form) : form_univ form := match p with
+    | Pred _ _ _ => ¬¬p
+    | All _ f => All _ (translate f)
+  end.
+
+  Variable agree : forall A p, nd A p <-> A ⊢U p.
+  Variable double_neg : forall A p, A ⊢ p -> A ⊢ translate p.
+  Lemma double_neg_univ A p : A ⊢U p -> A ⊢U translate p.
+  Proof. induction 1; apply agree, double_neg, agree.
+    -now apply ndUI.
+    -now apply ndUE.
+  Qed.
 
 End universals.
 
@@ -95,9 +114,26 @@ Inductive nd : list form -> form -> Prop :=
   | ndU A p : nd_univ form _ subst_form nd A p -> A ⊢ p
 where "A ⊢ p" := (nd A p).
 
-Fixpoint weakening A B p: A ⊢ p -> incl A B -> B ⊢ p.
+(* Fixpoint weakening A B p: A ⊢ p -> incl A B -> B ⊢ p.
 Proof. destruct 1; intro Hinc.
     -apply ndI. now apply (weakening_imp _ _ nd weakening A B).
     -apply ndU. now apply (weakening_univ _ _ subst_form nd weakening A B).
-Qed.
+Qed. *)
+
+
+Variable retract_imp2univ : retract (form_implicative (form_univ form)) (form_univ form).
+Fixpoint translate (p : form) := match p with
+  | In_form_implicative p => inj (translate_imp form _ translate p)
+  | In_form_univ p => inj (translate_univ form retract_imp2univ translate p)
+end.
+
+
+Variable agreeI : forall A p, nd A p <-> nd_imp _ _ nd A p.
+Variable agreeU : forall A p, nd A p <-> nd_univ _ _ subst_form nd A p.
+
+(* Fixpoint double_neg A p: A ⊢ p -> A ⊢ translate p.
+Proof. destruct 1.
+  -apply ndI. now apply (double_neg_imp _ _ nd translate agreeI double_neg).
+  -apply ndU. now apply (double_neg_univ _ _ subst_form nd translate agreeU double_neg).
+Qed. *)
 
