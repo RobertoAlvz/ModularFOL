@@ -2,4 +2,12 @@
 
 axioms.v
 unscoped.v
-syntax.v
+termsyntax.v
+univsyntax.v
+universal_deduction.v
+implicativesyntax.v
+implicative_deduction.v
+intuitionisticsyntax.v
+classicsyntax.v
+classicalsyntax.v
+classical_deduction.v
