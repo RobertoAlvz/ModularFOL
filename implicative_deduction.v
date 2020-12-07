@@ -39,8 +39,7 @@ Variable agree : forall A p, A ⊢I p -> A ⊢ p.
     - apply (weakening (p::A) (p::B) _ H), incl_cons; [ now left | now apply incl_tl ].
   Defined.
 
-(*   Variable retract : included form_implicative (form_implicative form).
- *)
+
   Variable translate : form -> form.
   Definition translate_imp (p : form_implicative form) : form := match p with
     | Fal _ => ¬¬⊥

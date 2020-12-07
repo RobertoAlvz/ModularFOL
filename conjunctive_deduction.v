@@ -32,7 +32,6 @@ Section Conjunctive.
   Defined.
 
   Variable retract_implicative : included form_implicative form.
-(*   Variable retract_imp_conj : included form_implicative (form_conjunctive form). *)
 
   Variable translate : form -> form.
   Definition translate_conj (p : form_conjunctive form) : form := match p with

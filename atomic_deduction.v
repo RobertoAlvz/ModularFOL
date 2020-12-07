@@ -26,10 +26,9 @@ Section atomic.
   Defined.
 
   Variable retract_implicative : included form_implicative form.
-(*   Variable retract_imp_atom : included form_implicative form_atomic.
- *)
+
   Variable translate : form -> form.
-  Definition translate_atomic (p : form_atomic) : _ := ¬¬(inj p).
+  Definition translate_atomic (p : form_atomic) : form := ¬¬(inj p).
 
   Variable translation_int : forall A p, A ⊢ p -> (map translate A) ⊢ (translate p).
   Lemma translation_int_atom A p : A ⊢A p -> (map translate A) ⊢A (translate p).

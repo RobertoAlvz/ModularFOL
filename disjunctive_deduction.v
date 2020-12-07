@@ -31,7 +31,6 @@ Section Disjunctive.
   Defined.
 
   Variable retract_implicative : included form_implicative form.
-(*   Variable retract_imp_disj : included form_implicative (form_disjunctive form). *)
 
   Variable translate : form -> form.
   Definition translate_disj (p : form_disjunctive form) : _ := match p with

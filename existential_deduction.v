@@ -30,7 +30,6 @@ Section Existential.
   Defined.
 
   Variable retract_implicative : included form_implicative form.
-  Variable retract_imp_exst : included form_implicative (form_existential form).
 
   Variable translate : form -> form.
   Definition translate_exst (p : form_existential form) : _ := match p with

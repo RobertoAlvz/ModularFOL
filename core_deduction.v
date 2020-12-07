@@ -28,9 +28,6 @@ Qed.
 
 Section translation.
 
-  Variable retract_imp_imp  : included form_implicative (form_implicative form).
-  Variable retract_imp_univ : included form_implicative (form_universal form).
-
 Fixpoint translate (p : form) : form := match p with
   | In_form_implicative p => translate_imp form _ translate p
   | In_form_universal p   => translate_univ form _ _ translate p
