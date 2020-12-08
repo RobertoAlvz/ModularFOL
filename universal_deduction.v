@@ -22,7 +22,7 @@ Section universals.
 
   Definition up_ctx (A : list form) := map (subst_form (S >> var_term)) A.
   Inductive nd_univ (A : list form) : form -> Prop :=
-    | ndAgree p : A ⊢ p -> A ⊢U p
+    | ndUAgree p : A ⊢ p -> A ⊢U p
     | ndUI p : up_ctx A ⊢ p -> A ⊢U ∀ p
     | ndUE p t : A ⊢ ∀ p -> A ⊢U subst_form (scons t (var_term)) p
   where "A ⊢U p" := (nd_univ A p).
@@ -31,7 +31,7 @@ Section universals.
 
   Variable weakening : forall A B p, A ⊢ p -> incl A B -> B ⊢ p.
   Lemma weakening_univ A B p : A ⊢U p -> incl A B -> B ⊢U p.
-  Proof. intro. revert B. destruct H; intros B Hinc; [ apply ndAgree | apply ndUI | apply ndUE ].
+  Proof. intro. revert B. destruct H; intros B Hinc; [ apply ndUAgree | apply ndUI | apply ndUE ].
     1,3: now apply (weakening A).
     -apply (weakening (up_ctx A) (up_ctx B)); [ assumption | unfold up_ctx ]. now apply incl_map.
   Defined.
@@ -46,12 +46,12 @@ Section universals.
 
   Variable translation_int : forall A p, A ⊢ p -> (map translate A) ⊢ (translate p).
   Lemma translation_int_univ A p : A ⊢U p -> (map translate A) ⊢U (translate p).
-  Proof. intro H. apply agree in H. apply translation_int in H. now apply ndAgree.
+  Proof. intro H. apply agree in H. apply translation_int in H. now apply ndUAgree.
   Defined.
 
   Variable translation_elim : forall A p, (map translate A) ⊢ (translate p) -> A ⊢ p.
   Lemma translation_elim_univ A p : (map translate A) ⊢U (translate p) -> A ⊢U p.
-  Proof. intro. now apply ndAgree, translation_elim, agree.
+  Proof. intro. now apply ndUAgree, translation_elim, agree.
   Defined.
 
 End universals.

@@ -1,5 +1,4 @@
-Require Export implicative_deduction universal_deduction atomic_deduction conjunctive_deduction disjunctive_deduction existential_deduction.
-
+Require Export implicative_deduction universal_deduction.
 Require Import coresyntax.
 
 Reserved Notation "A ⊢c p" (at level 70).
@@ -16,15 +15,17 @@ Proof. destruct H; intro Hinc; [apply ndI | apply ndU ].
 Defined.
 
 Inductive ndc : list form -> form -> Prop := 
-  | ndInj A p : A ⊢ p -> A ⊢c p
+  | ndcI A p : nd_imp form _ ndc A p -> A ⊢c p
+  | ndcU A p : nd_univ form _ subst_form ndc A p -> A ⊢c p
   | ndDN A p : A ⊢c (¬¬p) -> A ⊢c p
 where "A ⊢c p" := (ndc A p).
 
-Lemma weakening_c A B p (H : A ⊢c p) : incl A B -> B ⊢c p.
+Fixpoint weakening_c A B p (H : A ⊢c p) : incl A B -> B ⊢c p.
 Proof. induction H; intro Hinc;
-  [ now apply ndInj, (weakening A)
+  [ now apply ndcI, (weakening_imp form _ ndc weakening_c A)
+  | now apply ndcU, (weakening_univ form _ subst_form ndc weakening_c A)
   | now apply ndDN, IHndc ].
-Qed.
+Defined.
 
 Section translation.
 
@@ -36,8 +37,6 @@ end.
 Notation "« p »" := (translate p).
 Notation "«/ A »" := (map translate A).
 
-(* Variable 
- *)
 Fixpoint translation_int A p (H : A ⊢ p) : «/ A » ⊢ «p».
 Proof. destruct H; [apply ndI | apply ndU ].
   -now apply (translation_int_imp _ _ _ ndI _ translation_int).
@@ -45,15 +44,16 @@ Proof. destruct H; [apply ndI | apply ndU ].
 Admitted.
 (* Defined. *)
 
-Lemma trans_char p : exists q, «p» = (¬¬q) /\ (forall A, «p» :: A ⊢c q).
-Proof. destruct p.
-  -(*implicative*) destruct f; cbn; [ exists ⊥ | exists («f»~>«f0») ];
-    apply (conj eq_refl); intro; apply ndDN, ndInj, ndI, ndHyp; now left.
-  -destruct f; cbn. exists (∀ «f»). apply (conj eq_refl).
-    intro. apply ndDN, ndInj, ndI, ndHyp. now left.
+Lemma trans_char p : exists q, «p» = (¬¬q).
+Proof. destruct p; destruct f; cbn; [ now exists ⊥ | now exists («f»~>«f0») | now exists (∀ «f») ].
 Qed.
 
 Fixpoint translation_elim A p : «/A» ⊢c «p» -> A ⊢c p.
-Proof. Admitted.
+Proof. destruct (trans_char p) as [q rw]. rewrite rw. destruct 1 eqn:?; [apply ndcI | apply ndcU | ].
+  -apply (translation_elim_imp _ _ _ ndcI _ translation_elim). admit.
+  -apply (translation_elim_univ _ _ _ _ ndcU _ translation_elim). admit.
+  -admit.
+Admitted.
+(* Defined. *)
 
 End translation.
