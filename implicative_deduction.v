@@ -59,13 +59,35 @@ Section implicative.
     + pose (translation_inj (Impl _ p q)). cbn in e. rewrite <- e. now apply translation_int.
   Defined.
 
-  Require Import classical_deduction.
-  Notation "A ⊢cI p":=(nd_classic _ _ nd_imp A p) (at level 70).
-  
-  Lemma translation A p: A ⊢cI p <-> «/A» ⊢I «p».
-  Proof. Admitted.
 End implicative.
 
-
-
 Notation "A ⊢I p" := (nd_imp A p) (at level 70).
+
+Section translation.
+  Notation "A ⊢[ nd ] p" := (@nd_imp _ _ nd A p) (at level 70).
+
+  Variable form : Type.
+  Variable retract_implicative : included form_implicative form.
+
+  Variable translate : form -> form.
+  Notation "« p »" := (translate p).
+  Notation "«/ A »" := (map translate A).
+
+  Variable translation_inj : forall p, «inj p» = inj (translate_imp _ translate p).
+
+  Variable nd : list form -> form -> Prop.
+  Variable cnd : list form -> form -> Prop.
+  Variable dne : forall A p, cnd A (¬¬p) -> cnd A p.
+
+  Variable translation : forall A p, cnd A p <-> nd «/A» «p».
+
+  Lemma translation_imp A p: A ⊢[cnd] p <-> «/A» ⊢[nd] «p».
+  Proof. split.
+  -destruct 1.
+    +now apply ndHyp, in_map.
+    +apply translation in H. rewrite translation_inj in H. cbn in H. now apply ndExp.
+    +rewrite translation_inj. cbn. apply ndII. rewrite <- map_cons. now apply translation.
+    +apply (ndIE _ _ _ _ «p»). 2: now apply translation. {pose (translation_inj (Impl _ p q)). cbn in e. rewrite <- e. now apply translation. }
+  -admit.
+  Admitted.
+End translation.
