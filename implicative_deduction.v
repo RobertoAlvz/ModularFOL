@@ -75,19 +75,24 @@ Section translation.
 
   Variable translation_inj : forall p, «inj p» = inj (translate_imp _ translate p).
 
+  Require Import classical_deduction.
+
   Variable nd : list form -> form -> Prop.
   Variable cnd : list form -> form -> Prop.
-  Variable dne : forall A p, cnd A (¬¬p) -> cnd A p.
 
-  Variable translation : forall A p, cnd A p <-> nd «/A» «p».
+  Variable embed : forall A p, nd A p -> cnd A p.
+  Lemma embed_imp A p : A ⊢[nd] p -> A ⊢[cnd] p.
+  Proof. destruct 1; [ now apply ndHyp | now apply ndExp, embed | now apply ndII, embed | ]. apply (ndIE _ _ _ _ p); now apply embed.
+  Defined.
 
-  Lemma translation_imp A p: A ⊢[cnd] p <-> «/A» ⊢[nd] «p».
-  Proof. split.
-  -destruct 1.
+  
+
+  Variable translation : forall A p, cnd A p -> nd «/A» «p».
+  Lemma translation_imp A p: A ⊢[cnd] p -> «/A» ⊢[nd] «p».
+  Proof. destruct 1.
     +now apply ndHyp, in_map.
     +apply translation in H. rewrite translation_inj in H. cbn in H. now apply ndExp.
     +rewrite translation_inj. cbn. apply ndII. rewrite <- map_cons. now apply translation.
     +apply (ndIE _ _ _ _ «p»). 2: now apply translation. {pose (translation_inj (Impl _ p q)). cbn in e. rewrite <- e. now apply translation. }
-  -admit.
-  Admitted.
+  Defined.
 End translation.

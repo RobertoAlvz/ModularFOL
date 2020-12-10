@@ -26,3 +26,29 @@ Section classical.
 End classical.
 
 Notation "A ⊢c p" := (nd_classic A p) (at level 70).
+
+Section translation.
+
+  Variable form : Type.
+  Variable retract_implicative : included form_implicative form.
+  Notation "A ⊢[ nd ] p" := (@nd_classic form _ nd A p) (at level 70).
+  Variable translate : form -> form.
+  Notation "« p »" := (translate p).
+  Notation "«/ A »" := (map translate A).
+
+  Variable nd : list form -> form -> Prop.
+  Variable cnd : list form -> form -> Prop.
+  Variable dne : forall A p, cnd A (¬¬p) -> cnd A p.
+
+  Variable embed : forall A p, nd A p -> cnd A p.
+  Lemma embed_class A p : A ⊢[nd] p -> A ⊢[cnd] p.
+  Proof. destruct 1. now apply ndDN, embed.
+  Defined.
+
+  Variable dn_int : forall A p , nd A p -> nd A (¬¬p).
+
+  Variable translation : forall A p, cnd A p -> nd «/A» «p».
+  Lemma translation_class A p: A ⊢[cnd] p -> nd «/A» «p».
+  Proof. destruct 1. apply dne in H. now apply translation.
+  Defined.
+End translation.

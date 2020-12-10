@@ -59,3 +59,39 @@ Section universals.
 End universals.
 
 Notation "A ⊢U p" := (nd_univ A p) (at level 70).
+
+Section translation.
+
+  Variable form : Type.
+  Variable subst_form : (fin -> term) -> form -> form.
+  Variable retract_univ : retract (form_universal form) form.
+(*   Variable retract_implicative : included form_implicative form.
+ *)
+  Notation "A ⊢[ nd ] p" := (@nd_univ form _ subst_form nd A p) (at level 70).
+  Variable translate : form -> form.
+  Notation "« p »" := (translate p).
+  Notation "«/ A »" := (map translate A).
+
+  Variable translation_inj : forall p, «inj p» = inj (translate_univ _ translate p).
+
+  Require Import classical_deduction.
+  Variable retract_implicative : included form_implicative form.
+
+  Variable nd : list form -> form -> Prop.
+  Variable cnd : list form -> form -> Prop.
+
+  Variable embed : forall A p, nd A p -> cnd A p.
+  Lemma embed_univ A p : A ⊢[nd] p -> A ⊢[cnd] p.
+  Proof. destruct 1; [ now apply ndUI, embed | now apply ndUE, embed ].
+  Defined.
+
+
+  Variable translation_subst : forall q sigma, translate (subst_form sigma q) = subst_form sigma (translate q).
+
+  Variable translation : forall A p, cnd A p -> nd «/A» «p».
+  Lemma translation_univ A p: A ⊢[cnd] p -> «/A» ⊢[nd] «p».
+  Proof. destruct 1.
+    +rewrite translation_inj. cbn. apply ndUI. rewrite translation_map. now apply translation. exact translation_subst.
+    +rewrite translation_subst. apply ndUE. { pose (translation_inj (All _ p)). cbn in e. rewrite <- e. now apply translation. }
+  Defined.
+End translation.

@@ -1,7 +1,6 @@
 Require Export implicative_deduction universal_deduction classical_deduction.
 Require Import coresyntax.
 
-Reserved Notation "A ⊢c p" (at level 70).
 
 Inductive nd : list form -> form -> Prop := 
   | ndI A p : nd_imp form _ nd A p -> A ⊢ p
@@ -14,20 +13,22 @@ Proof. destruct H; intro Hinc; [apply ndI | apply ndU ].
   -now apply (weakening_univ form _ subst_form nd weakening A B).
 Defined.
 
-Inductive ndc : list form -> form -> Prop := 
-  | ndcI A p : nd_imp form _ ndc A p -> A ⊢c p
-  | ndcU A p : nd_univ form _ subst_form ndc A p -> A ⊢c p
-  | ndcc A p : nd_classic form _ ndc A p -> A ⊢c p
-where "A ⊢c p" := (ndc A p).
+Reserved Notation "A |- p" (at level 70).
+Inductive cnd : list form -> form -> Prop := 
+  | cndI A p : nd_imp form _ cnd A p -> A |- p
+  | cndU A p : nd_univ form _ subst_form cnd A p -> A |- p
+  | cndDN A p : nd_classic form _ cnd A p -> A |- p
+where "A |- p" := (cnd A p).
 
-Fixpoint weakening_c A B p (H : A ⊢c p) : incl A B -> B ⊢c p.
+Lemma dne A p : A |- (¬¬p) -> A |- p.
+Proof. intro. now apply cndDN, ndDN. Defined.
+
+Fixpoint weakening_c A B p (H : A |- p) : incl A B -> B |- p.
 Proof. destruct  H; intro Hinc;
-  [ now apply ndcI, (weakening_imp form _ ndc weakening_c A)
-  | now apply ndcU, (weakening_univ form _ subst_form ndc weakening_c A)
-  | now apply ndcc, (weakening_classic form _ ndc weakening_c A) ].
+  [ now apply cndI, (weakening_imp form _ cnd weakening_c A)
+  | now apply cndU, (weakening_univ form _ subst_form cnd weakening_c A)
+  | now apply cndDN, (weakening_classic form _ cnd weakening_c A) ].
 Defined.
-
-Section translation.
 
 Fixpoint translate (p : form) : form := match p with
   | In_form_implicative p => inj (translate_imp form translate p)
@@ -39,11 +40,11 @@ Notation "«/ A »" := (map translate A).
 Lemma translation_subst p sigma : « p [sigma] » = « p » [sigma].
 Proof. Admitted.
 
-Fixpoint translation_int A p (H : A ⊢ p) : «/ A » ⊢ «p».
-Proof. destruct H; [apply ndI | apply ndU ].
-  -apply translation_int_imp. { intro. auto. } exact translation_int. assumption.
-  -apply translation_int_univ. { intro. auto. } exact translation_subst. exact translation_int. assumption.
-Defined.
 
-
-End translation.
+Fixpoint translation A p (H : A |- p) : «/A» ⊢ «p».
+Proof. destruct H.
+  -now apply ndI, (translation_imp _ _ _ (fun _ => eq_refl) nd cnd).
+  -now apply ndU, (translation_univ form _ _ _ (fun _ => eq_refl) nd cnd); [ apply translation_subst | apply translation | ].
+  -now apply (translation_class _ _ translate nd cnd dne translation).
+Admitted.
+(* Defined. *)

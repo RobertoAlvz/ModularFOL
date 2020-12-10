@@ -1,11 +1,11 @@
 Require Export unscoped header_extensible.
 
-Require Export conjunctivesyntax implicativesyntax.
+Require Export conjunctivesyntax .
 
 Reserved Notation "A ⊢ p" (at level 70).
 Reserved Notation "A ⊢C p" (at level 70).
 
-Notation "p ∧ q" := (Conj_ _ _ p q) (at level 60).
+Notation "p ∧ q" := (inj (Conj _ p q)) (at level 60).
 
 Section Conjunctive.
   Variable form : Type.
@@ -30,8 +30,44 @@ Section Conjunctive.
   Defined.
 
   Variable translate : form -> form.
-  Definition translate_conj (p : form_conjunctive form) : form := match p with
-    | Conj _ p q => (translate p) ∧ (translate q)
+  Definition translate_conj (p : form_conjunctive form) : _ := match p with
+    | Conj _ p q => Conj _ (translate p) (translate q)
   end.
 
 End Conjunctive.
+
+Section translation.
+  Notation "A ⊢[ nd ] p" := (@nd_conj _ _ nd A p) (at level 70).
+
+  Require Import classical_deduction.
+  Variable form : Type.
+  Variable retract : retract (form_conjunctive form) form.
+  Variable retract_implicative : included form_implicative form.
+
+  Variable translate : form -> form.
+  Notation "« p »" := (translate p).
+  Notation "«/ A »" := (map translate A).
+
+  Variable translation_inj : forall p, «inj p» = inj (translate_conj _ translate p).
+
+
+  Variable nd : list form -> form -> Prop.
+  Variable cnd : list form -> form -> Prop.
+
+  Variable embed : forall A p, nd A p -> cnd A p.
+  Lemma embed_conj A p : A ⊢[nd] p -> A ⊢[cnd] p.
+  Proof. destruct 1.
+    -apply ndCI; now apply embed.
+    -now apply (ndCE1 _ _ _ _  _ q), embed.
+    -now apply (ndCE2 _ _ _ _ p), embed.
+  Defined.
+
+  Variable translation : forall A p, cnd A p -> nd «/A» «p».
+  Lemma translation_conj A p: A ⊢[cnd] p -> «/A» ⊢[nd] «p».
+  Proof. destruct 1.
+    -rewrite translation_inj. cbn. apply ndCI; now apply translation.
+    -apply (ndCE1 _ _ _ _ _ «q»). { pose (translation_inj (Conj _ p q)). cbn in e. rewrite <- e. now apply translation. }
+    -apply (ndCE2 _ _ _ _ «p»). { pose (translation_inj (Conj _ p q)). cbn in e. rewrite <- e. now apply translation. }
+  Defined.
+
+End translation.

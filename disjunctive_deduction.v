@@ -5,7 +5,7 @@ Require Export disjunctivesyntax implicativesyntax.
 Reserved Notation "A ⊢ p" (at level 70).
 Reserved Notation "A ⊢D p" (at level 70).
 
-Notation "p ∨ q" := (Disj_ _ _ p q) (at level 60).
+Notation "p ∨ q" := (inj (Disj _ p q)) (at level 60).
 
 Section Disjunctive.
   Variable form : Type.
@@ -37,3 +37,33 @@ Section Disjunctive.
   end.
 
 End Disjunctive.
+
+Section translation.
+  Notation "A ⊢[ nd ] p" := (@nd_disj _ _ nd A p) (at level 70).
+
+  Require Import classical_deduction.
+  Variable form : Type.
+  Variable retract : retract (form_disjunctive form) form.
+  Variable retract_implicative : included form_implicative form.
+
+  Variable translate : form -> form.
+  Notation "« p »" := (translate p).
+  Notation "«/ A »" := (map translate A).
+
+  Variable translation_inj : forall p, «inj p» = (translate_disj _ _  _ translate p).
+
+
+  Variable nd : list form -> form -> Prop.
+  Variable cnd : list form -> form -> Prop.
+
+  Variable embed : forall A p, nd A p -> cnd A p.
+  Lemma embed_disj A p : A ⊢[nd] p -> A ⊢[cnd] p.
+  Proof. destruct 1; [ apply ndDI1 | apply ndDI2 | apply (ndDE _ _ _ _ p q) ]; now apply embed.
+  Defined.
+
+  Variable translation : forall A p, cnd A p -> nd «/A» «p».
+  Lemma translation_disj A p: A ⊢[cnd] p -> «/A» ⊢[nd] «p».
+  Proof. Admitted.
+
+
+End translation.
