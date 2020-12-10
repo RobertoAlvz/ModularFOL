@@ -75,6 +75,6 @@ Definition isIn_form_form_implicative (s : form) (t : form_implicative) : Prop :
 
 End form_implicative.
 
-Notation "p ~> q" := (Impl_ _ _ p q) (at level 60).
-Notation "⊥" := (Fal_ _ _).
+Notation "p ~> q" := (inj (Impl _ p q)) (at level 60).
+Notation "⊥" := (inj (Fal _)).
 Notation "¬ p" := (p ~> ⊥) (at level 60).

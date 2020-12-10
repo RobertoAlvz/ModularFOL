@@ -63,4 +63,4 @@ Definition isIn_form_form_universal (s : form) (t : form_universal) : Prop :=
 
 End form_universal.
 
-Notation "∀ p ":= (All_ _ _ p) (at level 60).
+Notation "∀ p ":= (inj (All _ p)) (at level 60).
