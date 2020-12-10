@@ -19,20 +19,18 @@ Section implicative.
   Notation "A ⊢ p" := (nd A p) (at level 70).
 
   Inductive nd_imp (A : list form) : form -> Prop :=
-    | ndIAgree p : A ⊢ p -> A ⊢I p
     | ndHyp p : In p A -> A ⊢I p
-    | ndExp p : A ⊢ ⊥ -> A ⊢I p
+    | ndExp p : A ⊢ ⊥  -> A ⊢I p
     | ndII p q : (p :: A) ⊢ q -> A ⊢I p ~> q
     | ndIE p q : A ⊢ p ~> q -> A ⊢ p -> A ⊢I q
   where "A ⊢I p" := (nd_imp A p).
 
-Variable agree : forall A p, A ⊢I p -> A ⊢ p.
+(* Variable agree : forall A p, A ⊢I p -> A ⊢ p. *)
 
   Variable weakening : forall A B p, A ⊢ p -> incl A B -> B ⊢ p.
   Lemma weakening_imp A B p : A ⊢I p -> incl A B -> B ⊢I p.
   Proof. intro. revert B. destruct H; intros B Hinc;
-    [ now apply ndIAgree, (weakening A) 
-    | now apply ndHyp, (Hinc p)
+    [ now apply ndHyp, (Hinc p)
     | now apply ndExp, (weakening A) 
     | apply ndII 
     | now apply (ndIE _ p _ (weakening _ _ _ H Hinc)), (weakening A) ].
@@ -41,20 +39,33 @@ Variable agree : forall A p, A ⊢I p -> A ⊢ p.
 
 
   Variable translate : form -> form.
-  Definition translate_imp (p : form_implicative form) : form := match p with
-    | Fal _ => ¬¬⊥
-    | Impl _ p q => ¬¬( (translate p) ~> (translate q))
+  Definition translate_imp (p : form_implicative form) : _ := match p with
+    | Fal _ => Fal _
+    | Impl _ p q => Impl _ (translate p) (translate q)
   end.
+  Notation "« p »" := (translate p).
+  Notation "«/ A »" := (map translate A).
 
-  Variable translation_int : forall A p, A ⊢ p -> (map translate A) ⊢ (translate p).
-  Lemma translation_int_imp A p : A ⊢I p -> (map translate A) ⊢I (translate p).
-  Proof. intro H. apply agree in H. apply translation_int in H. now apply ndIAgree.
+  Variable translation_inj : forall p, «inj p» = inj (translate_imp p).
+  Variable translation_int : forall A p, A ⊢ p -> «/A» ⊢ «p».
+(*   Variable nd_inj : forall A p, A ⊢ (inj p) = (A ⊢I (inj p)).
+ *)
+  Lemma translation_int_imp A p : A ⊢I p -> «/A» ⊢I «p».
+  Proof. destruct 1.
+  -now apply ndHyp, in_map.
+  -apply ndExp. pose (translation_inj (Fal _)). cbn in e. rewrite <- e. now apply translation_int.
+  -rewrite (translation_inj). cbn. apply ndII. rewrite <- map_cons. now apply translation_int.
+  -apply (ndIE _ «p»). 2:now apply translation_int.
+    + pose (translation_inj (Impl _ p q)). cbn in e. rewrite <- e. now apply translation_int.
   Defined.
 
-  Variable translation_elim : forall A p, (map translate A) ⊢ (translate p) -> A ⊢ p.
-  Lemma translation_elim_imp A p : (map translate A) ⊢I (translate p) -> A ⊢I p.
-  Proof. intro. now apply ndIAgree, translation_elim, agree.
-  Defined.
+  Require Import classical_deduction.
+  Notation "A ⊢cI p":=(nd_classic _ _ nd_imp A p) (at level 70).
+  
+  Lemma translation A p: A ⊢cI p <-> «/A» ⊢I «p».
+  Proof. Admitted.
 End implicative.
+
+
 
 Notation "A ⊢I p" := (nd_imp A p) (at level 70).

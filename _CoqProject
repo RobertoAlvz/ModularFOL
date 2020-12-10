@@ -17,3 +17,4 @@ existentialsyntax.v
 existential_deduction.v
 coresyntax.v
 fullsyntax.v
+classical_deduction.v
