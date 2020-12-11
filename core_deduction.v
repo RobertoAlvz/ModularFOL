@@ -37,14 +37,14 @@ end.
 Notation "« p »" := (translate p).
 Notation "«/ A »" := (map translate A).
 
-Lemma translation_subst p sigma : « p [sigma] » = « p » [sigma].
-Proof. Admitted.
-
+Fixpoint translation_subst sigma p : « p [sigma] » = « p » [sigma].
+Proof. destruct p; destruct f; auto.
+Admitted.
 
 Fixpoint translation A p (H : A |- p) : «/A» ⊢ «p».
 Proof. destruct H.
   -now apply ndI, (translation_imp _ _ _ (fun _ => eq_refl) nd cnd).
-  -now apply ndU, (translation_univ form _ _ _ (fun _ => eq_refl) nd cnd); [ apply translation_subst | apply translation | ].
+  -now apply ndU, (translation_univ form _ _ _ (fun _ => eq_refl) (translation_subst) nd cnd).
   -now apply (translation_class _ _ translate nd cnd dne translation).
 Admitted.
 (* Defined. *)

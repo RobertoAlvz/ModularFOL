@@ -70,4 +70,10 @@ Section translation.
     -apply (ndCE2 _ _ _ _ «p»). { pose (translation_inj (Conj _ p q)). cbn in e. rewrite <- e. now apply translation. }
   Defined.
 
+  
+  Variable subst_form : (fin -> term) -> form -> form.
+  Variable translation_subst : forall sigma q, «subst_form sigma q» = subst_form sigma «q».
+  Lemma translation_subst_conj sigma q: «subst_form sigma (inj q)» = subst_form sigma «inj q».
+  Proof. destruct q; repeat now rewrite translation_subst.
+  Defined.
 End translation.

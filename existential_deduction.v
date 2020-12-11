@@ -41,15 +41,20 @@ Section translation.
 
   Variable form : Type.
   Variable subst_form : (fin -> term) -> form -> form.
-  Variable retract_existential : included form_existential form.
   Variable retract_implicative : included form_implicative form.
+  Variable retract_existential : included form_existential form.
   Variable translate : form -> form.
 
   Notation "A ⊢[ nd ] p" := (@nd_exst _ _ subst_form nd A p) (at level 70).
   Notation "« p »" := (translate p).
   Notation "«/ A »" := (map translate A).
 
-  Variable translation_inj : forall p, «inj p» = (translate_exst form  _ _ translate p).
+  Variable translation_inj : forall p, «inj p» = translate_exst _ _ _ translate p.
+  Variable translation_subst : forall sigma q, «subst_form sigma q» = subst_form sigma «q».
+
+  Lemma translation_subst_exst sigma q: «subst_form sigma (inj q)» = subst_form sigma «inj q».
+  Proof. destruct q. rewrite translation_subst. rewrite translation_inj. auto.
+  Defined.
 
   Require Import classical_deduction.
 

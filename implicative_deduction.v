@@ -43,21 +43,6 @@ Section implicative.
     | Fal _ => Fal _
     | Impl _ p q => Impl _ (translate p) (translate q)
   end.
-  Notation "« p »" := (translate p).
-  Notation "«/ A »" := (map translate A).
-
-  Variable translation_inj : forall p, «inj p» = inj (translate_imp p).
-  Variable translation_int : forall A p, A ⊢ p -> «/A» ⊢ «p».
-(*   Variable nd_inj : forall A p, A ⊢ (inj p) = (A ⊢I (inj p)).
- *)
-  Lemma translation_int_imp A p : A ⊢I p -> «/A» ⊢I «p».
-  Proof. destruct 1.
-  -now apply ndHyp, in_map.
-  -apply ndExp. pose (translation_inj (Fal _)). cbn in e. rewrite <- e. now apply translation_int.
-  -rewrite (translation_inj). cbn. apply ndII. rewrite <- map_cons. now apply translation_int.
-  -apply (ndIE _ «p»). 2:now apply translation_int.
-    + pose (translation_inj (Impl _ p q)). cbn in e. rewrite <- e. now apply translation_int.
-  Defined.
 
 End implicative.
 
@@ -75,6 +60,7 @@ Section translation.
 
   Variable translation_inj : forall p, «inj p» = inj (translate_imp _ translate p).
 
+
   Require Import classical_deduction.
 
   Variable nd : list form -> form -> Prop.
@@ -85,8 +71,6 @@ Section translation.
   Proof. destruct 1; [ now apply ndHyp | now apply ndExp, embed | now apply ndII, embed | ]. apply (ndIE _ _ _ _ p); now apply embed.
   Defined.
 
-  
-
   Variable translation : forall A p, cnd A p -> nd «/A» «p».
   Lemma translation_imp A p: A ⊢[cnd] p -> «/A» ⊢[nd] «p».
   Proof. destruct 1.
@@ -95,4 +79,11 @@ Section translation.
     +rewrite translation_inj. cbn. apply ndII. rewrite <- map_cons. now apply translation.
     +apply (ndIE _ _ _ _ «p»). 2: now apply translation. {pose (translation_inj (Impl _ p q)). cbn in e. rewrite <- e. now apply translation. }
   Defined.
+
+  Variable subst_form : (fin -> term) -> form -> form.
+  Variable translation_subst : forall sigma q, «subst_form sigma q» = subst_form sigma «q».
+  Lemma translation_subst_imp sigma q : «subst_form sigma (inj q)» = subst_form sigma «inj q».
+  Proof. destruct q; repeat now rewrite translation_subst.
+  Defined.
+
 End translation.

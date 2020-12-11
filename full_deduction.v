@@ -45,6 +45,7 @@ Inductive cnd : list form -> form -> Prop :=
   | cndDN A p : nd_classic form _ cnd A p -> A |- p
 where "A |- p" := (cnd A p).
 
+
 Fixpoint weakening_c A B p (H : A |- p) : incl A B -> B |- p.
 Proof. destruct H; intro Hinc; [apply cndI | apply cndU| apply cndC | apply cndD | apply cndE | apply cndDN ].
   -now apply (weakening_imp form _ cnd weakening_c A B).
@@ -56,7 +57,9 @@ Proof. destruct H; intro Hinc; [apply cndI | apply cndU| apply cndC | apply cndD
 Defined.
 
 Lemma dn_int A p : A ⊢ p -> A ⊢ (¬¬p).
-Proof. intro. apply ndI, ndII, ndI, (ndIE _ _ _ _ p); [ apply ndI,ndHyp | now apply (weakening A), incl_tl ]. now left.
+Proof. intro. apply ndI, ndII, ndI, (ndIE _ _ _ _ p).
+  -apply ndI,ndHyp. now left.
+  -now apply (weakening A), incl_tl.
 Defined.
 
 Fixpoint embed A p (H : A ⊢ p) : A |- p.
@@ -68,9 +71,10 @@ Proof. destruct H; [ apply cndI | apply cndU | apply cndC | apply cndD | apply c
   -now apply (embed_exst _ _ _ nd cnd embed).
 Defined.
 
-Lemma translation_subst p sigma : « p [sigma] » = « p » [sigma].
-Proof. Admitted.
-
+Fixpoint translation_subst sigma p : « subst_form sigma p » = subst_form sigma « p ».
+Proof. destruct p; destruct f; auto.
+Admitted.
+(* Defined. *)
 
 Lemma dne A p : A |- (¬¬p) -> A |- p.
 Proof. intro. now apply cndDN, ndDN. Defined.
@@ -78,9 +82,10 @@ Proof. intro. now apply cndDN, ndDN. Defined.
 Fixpoint translation A p (H : A |- p) : «/A» ⊢ «p».
 Proof. destruct H.
   -now apply ndI, (translation_imp _ _ _ (fun _ => eq_refl) nd cnd).
-  -now apply ndU, (translation_univ form _ _ _ (fun _ => eq_refl) nd cnd); [ apply translation_subst | apply translation | ].
+  -now apply ndU, (translation_univ form _ _ _ (fun _ => eq_refl) translation_subst nd cnd).
   -now apply ndC, (translation_conj _ _ _ (fun _ => eq_refl) nd cnd).
   -now apply ndD, (translation_disj _ _ _ _ (fun _ => eq_refl) nd cnd embed).
-  -now apply ndE, (translation_exst _ _ _ _ _ (fun _ => eq_refl) nd cnd embed).
-  -now apply (translation_class _ _ translate nd cnd dne translation).
+  -now apply ndE, (translation_exst _ _ _ _ _ (fun _ => eq_refl) translation_subst nd cnd embed).
+  -destruct H. apply (translation_class _ _ translate nd cnd dne translation).
 Defined.
+

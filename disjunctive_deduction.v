@@ -65,5 +65,10 @@ Section translation.
   Lemma translation_disj A p: A ⊢[cnd] p -> «/A» ⊢[nd] «p».
   Proof. Admitted.
 
+  Variable subst_form : (fin -> term) -> form -> form.
+  Variable translation_subst : forall sigma q, «subst_form sigma q» = subst_form sigma «q».
+  Lemma translation_subst_disj sigma q: «subst_form sigma (inj q)» = subst_form sigma «inj q».
+  Proof. destruct q; repeat now rewrite translation_subst.
+  Defined.
 
 End translation.
