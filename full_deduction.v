@@ -59,6 +59,17 @@ Proof. destruct H; intro Hinc; [apply cndI | apply cndU| apply cndC | apply cndD
   -now apply (weakening_classic form _ cnd weakening_c A B).
 Defined.
 
+Fixpoint translation_subst sigma p : « subst_form sigma p » = subst_form sigma « p ».
+Proof. destruct p.
+  -apply translation_subst_atm. { intro. reflexivity. } {intros. reflexivity. } {intros. reflexivity. }
+  -apply translation_subst_imp. { intro. reflexivity. } { intros. reflexivity. } apply translation_subst.
+  -apply translation_subst_univ. { intro. reflexivity. } { intros. reflexivity. } apply translation_subst.
+  -apply translation_subst_conj. { intro. reflexivity. } { intros. reflexivity. } apply translation_subst.
+  -apply translation_subst_disj. { intro. reflexivity. } { intros. reflexivity. } {intros. reflexivity. } apply translation_subst.
+  -apply translation_subst_exst. { intro. reflexivity. } { intros. reflexivity. } {intros. reflexivity. } apply translation_subst.
+Defined.
+
+
 Lemma dn_int A p : A ⊢ p -> A ⊢ (¬¬p).
 Proof. intro. apply ndI, ndII, ndI, (ndIE _ _ _ _ p).
   -apply ndI,ndHyp. now left.

@@ -35,6 +35,14 @@ Section Conjunctive.
   Definition translate_conj (p : form_conjunctive form) : _ := match p with
     | Conj _ p q => (translate p) ∧ (translate q)
   end.
+  Notation "« p »" := (translate p).
+  Notation "«/ A »" := (map translate A).
+  Variable subst_form : (fin -> term) -> form -> form.
+  Variable subst_form_inj : forall sigma p, subst_form sigma (inj p) = subst_form_conjunctive _ subst_form _ sigma p.
+  Variable translation_subst : forall sigma q, «subst_form sigma q» = subst_form sigma «q».
+  Lemma translation_subst_conj sigma p :  « subst_form_conjunctive _ subst_form _ sigma p » = subst_form sigma (translate_conj p).
+  Proof. destruct p; cbn. unfold Conj_. rewrite translation_inj. rewrite subst_form_inj. cbn. apply congr_Conj_; apply translation_subst.
+  Defined.
 
 End Conjunctive.
 

@@ -46,6 +46,16 @@ Section implicative.
 
 End implicative.
 
+  Variable translation_inj : forall p, «inj p» = translate_imp  p.
+  Variable agree : forall A p, A ⊢I p -> A ⊢ p.  Variable subst_form : (fin -> term) -> form -> form.
+  Variable subst_form_inj : forall sigma p, subst_form sigma (inj p) = subst_form_implicative _ subst_form _ sigma p.
+  Variable translation_subst : forall sigma q, «subst_form sigma q» = subst_form sigma «q».
+  Lemma translation_subst_imp sigma p :  « subst_form_implicative _ subst_form _ sigma p » = subst_form sigma (translate_imp p).
+  Proof. destruct p; cbn. 
+    -rewrite subst_form_inj. unfold Fal_. rewrite translation_inj. reflexivity.
+    -rewrite subst_form_inj. unfold Impl_. rewrite translation_inj. cbn. apply congr_Impl_; apply translation_subst.
+  Defined.
+
 Notation "A ⊢I p" := (nd_imp A p) (at level 70).
 
 Section translation.

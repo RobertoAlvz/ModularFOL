@@ -37,6 +37,17 @@ Section Disjunctive.
   Definition translate_disj (p : form_disjunctive form) : _ := match p with
     | Disj _ p q => ¬¬((translate p) ∨ (translate q))
   end.
+  Notation "« p »" := (translate p).
+  Notation "«/ A »" := (map translate A).
+
+  Variable subst_form : (fin -> term) -> form -> form.
+  Variable subst_form_inj : forall sigma p, subst_form sigma (inj p) = subst_form_disjunctive _ subst_form _ sigma p.
+  Variable subst_dn : forall sigma p, subst_form sigma (¬¬p) = ¬¬(subst_form sigma p).
+  Variable translation_subst : forall sigma q, «subst_form sigma q» = subst_form sigma «q».
+  Lemma translation_subst_disj sigma p :  « subst_form_disjunctive _ subst_form _ sigma p » = subst_form sigma (translate_disj p).
+  Proof. destruct p; cbn. unfold Disj_. rewrite translation_inj. cbn. rewrite subst_dn. repeat apply congr_Impl_.
+    rewrite subst_form_inj. cbn. apply congr_Disj_; apply translation_subst. all: reflexivity.
+  Defined.
 
 End Disjunctive.
 

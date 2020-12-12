@@ -38,6 +38,12 @@ Section universals.
 
 
 End universals.
+  Variable translation_inj : forall p, «inj p» = translate_univ  p.
+  Variable subst_form_inj : forall sigma p, subst_form sigma (inj p) = subst_form_universal _ subst_form _ sigma p.
+  Variable translation_subst : forall sigma q, «subst_form sigma q» = subst_form sigma «q».
+  Lemma translation_subst_univ sigma p :  « subst_form_universal _ subst_form _ sigma p » = subst_form sigma (translate_univ p).
+  Proof. destruct p. cbn. rewrite subst_form_inj. unfold All_. rewrite translation_inj. cbn. apply congr_All_, translation_subst.
+  Defined.
 
 Notation "A ⊢U p" := (nd_univ A p) (at level 70).
 

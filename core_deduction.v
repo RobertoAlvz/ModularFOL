@@ -37,9 +37,11 @@ end.
 Notation "« p »" := (translate p).
 Notation "«/ A »" := (map translate A).
 
-Fixpoint translation_subst sigma p : « p [sigma] » = « p » [sigma].
-Proof. destruct p; destruct f; auto.
-Admitted.
+Fixpoint translation_subst sigma p : « subst_form sigma p » = subst_form sigma « p ».
+Proof. destruct p.
+  -apply translation_subst_imp. { intro. reflexivity. } { intros. reflexivity. } apply translation_subst.
+  -apply translation_subst_univ. { intro. reflexivity. } { intros. reflexivity. } apply translation_subst.
+Defined.
 
 Fixpoint translation A p (H : A |- p) : «/A» ⊢ «p».
 Proof. destruct H.
