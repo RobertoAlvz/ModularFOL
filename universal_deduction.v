@@ -43,7 +43,7 @@ Notation "A ⊢U p" := (nd_univ A p) (at level 70).
 
 Section translation.
 Require Import classical_deduction.
-
+  Context {Sigma : Signature}.
   Variable form : Type.
   Variable subst_form : (fin -> term) -> form -> form.
   Variable retract_univ : retract (form_universal form) form.

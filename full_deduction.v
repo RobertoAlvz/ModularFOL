@@ -2,6 +2,9 @@ Require Export implicative_deduction universal_deduction atomic_deduction conjun
 
 Require Import fullsyntax.
 
+Section deduction_systems.
+Context {Sigma : Signature}.
+
 Inductive nd : list form -> form -> Prop := 
   | ndI A p : nd_imp form _ nd A p -> A ⊢ p
   | ndU A p : nd_univ form _ subst_form nd A p -> A ⊢ p
@@ -89,3 +92,4 @@ Proof. destruct H.
   -destruct H. apply (translation_class _ _ translate nd cnd dne translation).
 Defined.
 
+End deduction_systems.

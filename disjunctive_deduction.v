@@ -8,6 +8,8 @@ Reserved Notation "A ⊢D p" (at level 70).
 Notation "p ∨ q" := (inj (Disj _ p q)) (at level 60).
 
 Section Disjunctive.
+  Context {Sigma : Signature}.
+
   Variable form : Type.
   Variable retract : retract (form_disjunctive form) form.
 
@@ -40,6 +42,7 @@ End Disjunctive.
 
 Section translation.
   Notation "A ⊢[ nd ] p" := (@nd_disj _ _ nd A p) (at level 70).
+  Context {Sigma : Signature}.
 
   Require Import classical_deduction.
   Variable form : Type.

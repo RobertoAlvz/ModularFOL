@@ -50,6 +50,7 @@ Notation "A ⊢I p" := (nd_imp A p) (at level 70).
 
 Section translation.
   Notation "A ⊢[ nd ] p" := (@nd_imp _ _ nd A p) (at level 70).
+  Context {Sigma : Signature}.
 
   Variable form : Type.
   Variable retract_implicative : included form_implicative form.

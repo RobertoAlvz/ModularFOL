@@ -6,6 +6,8 @@ Reserved Notation "A ⊢ p" (at level 70).
 Reserved Notation "A ⊢A p" (at level 70).
 
 Section atomic.
+  Context {Sigma : Signature}.
+
   Variable form : Type.
 
   Variable retract : retract (form_atomic) form.

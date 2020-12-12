@@ -2,6 +2,7 @@
 Require Export atomicsyntax implicativesyntax universalsyntax conjunctivesyntax disjunctivesyntax existentialsyntax termsyntax.
 
 Section form.
+Context {Sigma : Signature}.
 Inductive form  : Type :=
   | In_form_atomic : ( form_atomic   ) -> form 
   | In_form_implicative : ( form_implicative form  ) -> form 

@@ -1,6 +1,8 @@
 Require Export unscoped header_extensible.
 
 Class Signature := B_S { Funcs : Type; fun_ar : Funcs -> nat ; Preds : Type; pred_ar : Preds -> nat }.
+
+Section term.
 Context {Sigma : Signature}.
 
 Section term.

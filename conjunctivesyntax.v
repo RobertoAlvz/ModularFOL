@@ -2,6 +2,8 @@ Require Export unscoped header_extensible.
 Require Export termsyntax.
 
 Section form_conjunctive.
+Context {Sigma : Signature}.
+
 Variable form : Type.
 
 Variable subst_form : forall   (sigmaterm : ( fin ) -> term ) (s : form ), form .

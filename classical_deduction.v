@@ -5,6 +5,7 @@ Reserved Notation "A ⊢c p" (at level 70).
 
 
 Section classical.
+  Context {Sigma : Signature}.
 
   Variable form : Type.
   Variable retract_implicative : included form_implicative form.

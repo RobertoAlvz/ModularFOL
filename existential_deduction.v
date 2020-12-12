@@ -8,6 +8,8 @@ Reserved Notation "A ⊢E p" (at level 70).
 Notation "∃ p" := (inj (Exist _ p)) (at level 60).
 
 Section Existential.
+  Context {Sigma : Signature}.
+
   Variable form : Type.
   Variable retract : retract (form_existential form) form.
   Variable subst_form : (fin -> term) -> form -> form.
@@ -38,6 +40,7 @@ Section Existential.
 End Existential.
 
 Section translation.
+  Context {Sigma : Signature}.
 
   Variable form : Type.
   Variable subst_form : (fin -> term) -> form -> form.

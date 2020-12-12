@@ -2,6 +2,7 @@
 Require Export implicativesyntax universalsyntax termsyntax.
 
 Section form.
+  Context {Sigma : Signature}.
 Inductive form  : Type :=
   | In_form_implicative : ( form_implicative form  ) -> form 
   | In_form_universal : ( form_universal form  ) -> form .
