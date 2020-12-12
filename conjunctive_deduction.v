@@ -33,7 +33,7 @@ Section Conjunctive.
 
   Variable translate : form -> form.
   Definition translate_conj (p : form_conjunctive form) : _ := match p with
-    | Conj _ p q => Conj _ (translate p) (translate q)
+    | Conj _ p q => (translate p) ∧ (translate q)
   end.
 
 End Conjunctive.

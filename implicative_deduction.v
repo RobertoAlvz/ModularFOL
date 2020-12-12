@@ -40,8 +40,8 @@ Section implicative.
 
   Variable translate : form -> form.
   Definition translate_imp (p : form_implicative form) : _ := match p with
-    | Fal _ => Fal _
-    | Impl _ p q => Impl _ (translate p) (translate q)
+    | Fal _ => ⊥
+    | Impl _ p q => «p» ~> «q»
   end.
 
 End implicative.

@@ -25,9 +25,9 @@ Defined.
 
 Fixpoint translate (p : form) : form := match p with
   | In_form_atomic p      => translate_atomic form _ _ p
-  | In_form_implicative p => inj (translate_imp form translate p)
-  | In_form_universal p   => inj (translate_univ form translate p)
-  | In_form_conjunctive p => inj (translate_conj form translate p)
+  | In_form_implicative p => translate_imp form translate p
+  | In_form_universal p   => translate_univ form translate p
+  | In_form_conjunctive p => translate_conj form translate p
   | In_form_disjunctive p => translate_disj form _ _ translate p
   | In_form_existential p => translate_exst form _ _ translate p
 end.

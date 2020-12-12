@@ -33,7 +33,7 @@ Section universals.
 
   Variable translate : form -> form.
   Definition translate_univ (p : form_universal form) : _ := match p with
-    | All _ q => All _ (translate q)
+    | All _ q => ∀ (translate q)
   end.
 
 
