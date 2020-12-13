@@ -1,5 +1,18 @@
-# First order logic over modular syntax
+## Compilation
 
-`*syntax.v` files are customized from ouput of autosubst2, with `syntax.sig` as input.
+All required files are specified in `_CoqProject` just run 
+```
+coq_makefile -f _CoqProject -o Makefile
+make
+```
+## Overview 
 
-`*_deduction.v` files are fragmentwise implementatios of the appropiate rules of deduction, in particular `core_deduction.v` refers to the implicative and universal fragment while `full_deduction.v` refers to all connectives and quantifiers.
+This project _attempts_ to prove the equivalence between classic and intuitionistic first order logic using deduction predicates defined over modular syntax.
+
+The individual features of the syntax are contained in `*syntax.v` files, which are customized from output of autosubst2, with `syntax.sig` as input.
+
+The deduction predicates, and the instances of lemmas and definitions, are defined feature-wise in `*_deduction.v` files.
+
+The main results are in `core_deduction.v` and `full_deduction.v`, the former using a basic syntax containing only implication, falsity, and universal quantification, while the latter using the complete syntax.
+
+The development can be found on [github](https://github.com/RobertoAlvz/ModularFOL).
