@@ -62,8 +62,6 @@ Proof. exact (compSubstSubst_form sigmaterm tauterm (_) (fun n => eq_refl) s). Q
 Lemma compComp'_form    (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) : (funcomp) (subst_form tauterm) (subst_form sigmaterm) = subst_form ((funcomp) (subst_term tauterm) sigmaterm) .
 Proof. exact ((FunctionalExtensionality.functional_extensionality _ _ ) (fun n => compComp_form sigmaterm tauterm n)). Qed.
 
- *)
-End form.
 
 
 
@@ -137,6 +135,7 @@ Ltac auto_unfold := repeat unfold subst1,  subst2,  Subst1,  Subst2,  ids,  ren1
 
 Tactic Notation "auto_unfold" "in" "*" := repeat unfold subst1,  subst2,  Subst1,  Subst2,  ids,  ren1,  ren2,  Ren1,  Ren2,  Subst_term,  Subst_form,  VarInstance_term in *.
 
+ *)
 (* Ltac asimpl' := repeat first [progress rewrite ?instId_term| progress rewrite ?compComp_term| progress rewrite ?compComp'_term| progress rewrite ?instId_form_universal| progress rewrite ?compComp_form_universal| progress rewrite ?compComp'_form_universal| progress rewrite ?instId_form_implicative| progress rewrite ?compComp_form_implicative| progress rewrite ?compComp'_form_implicative| progress rewrite ?instId_form_existential| progress rewrite ?compComp_form_existential| progress rewrite ?compComp'_form_existential| progress rewrite ?instId_form_disjunctive| progress rewrite ?compComp_form_disjunctive| progress rewrite ?compComp'_form_disjunctive| progress rewrite ?instId_form_conjunctive| progress rewrite ?compComp_form_conjunctive| progress rewrite ?compComp'_form_conjunctive| progress rewrite ?instId_form_atomic| progress rewrite ?compComp_form_atomic| progress rewrite ?compComp'_form_atomic| progress rewrite ?instId_form| progress rewrite ?compComp_form| progress rewrite ?compComp'_form| progress rewrite ?varL_term| progress (unfold up_ren, up_term_term)| progress (cbn [subst_term subst_form_universal subst_form_implicative subst_form_existential subst_form_disjunctive subst_form_conjunctive subst_form_atomic subst_form])| fsimpl].
 
 Ltac asimpl := repeat try unfold_funcomp; auto_unfold in *; asimpl'; repeat try unfold_funcomp.
@@ -151,3 +150,4 @@ Tactic Notation "asimpl" "in" "*" := auto_unfold in *; repeat first [progress re
 Ltac substify := auto_unfold.
 
 Ltac renamify := auto_unfold.
+End form.

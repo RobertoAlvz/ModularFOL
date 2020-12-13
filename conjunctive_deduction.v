@@ -1,6 +1,7 @@
 Require Export unscoped header_extensible.
 
 Require Export conjunctivesyntax .
+Require Import classical_deduction.
 
 Reserved Notation "A ⊢ p" (at level 70).
 Reserved Notation "A ⊢C p" (at level 70).
@@ -37,6 +38,15 @@ Section Conjunctive.
   end.
   Notation "« p »" := (translate p).
   Notation "«/ A »" := (map translate A).
+
+  Variable translation_inj : forall p, translate (inj p) = translate_conj  p.
+  Variable translation_bwd : forall A p, A ⊢ translate p -> A ⊢ p.
+  Lemma translation_bwd_conj A p: A ⊢ (translate_conj p) -> A ⊢C inj p.
+  Proof. destruct p; cbn. intro. apply ndCI; apply agree;
+    [ apply (ndCE1 _ _ f0) | apply (ndCE2 _ f) ];
+    apply translation_bwd; now rewrite translation_inj.
+  Defined.
+
   Variable subst_form : (fin -> term) -> form -> form.
   Variable subst_form_inj : forall sigma p, subst_form sigma (inj p) = subst_form_conjunctive _ subst_form _ sigma p.
   Variable translation_subst : forall sigma q, «subst_form sigma q» = subst_form sigma «q».
@@ -50,8 +60,9 @@ Section translation.
   Notation "A ⊢[ nd ] p" := (@nd_conj _ _ nd A p) (at level 70).
   Context {Sigma : Signature}.
 
-  Require Import classical_deduction.
   Variable form : Type.
+  Variable nd : list form -> form -> Prop.
+  Variable cnd : list form -> form -> Prop.
   Variable retract : retract (form_conjunctive form) form.
   Variable retract_implicative : included form_implicative form.
 
@@ -59,11 +70,8 @@ Section translation.
   Notation "« p »" := (translate p).
   Notation "«/ A »" := (map translate A).
 
-  Variable translation_inj : forall p, «inj p» = inj (translate_conj _ translate p).
+  Variable translation_inj : forall p, «inj p» = translate_conj _ _ translate p.
 
-
-  Variable nd : list form -> form -> Prop.
-  Variable cnd : list form -> form -> Prop.
 
   Variable embed : forall A p, nd A p -> cnd A p.
   Lemma embed_conj A p : A ⊢[nd] p -> A ⊢[cnd] p.
@@ -81,10 +89,4 @@ Section translation.
     -apply (ndCE2 _ _ _ _ «p»). { pose (translation_inj (Conj _ p q)). cbn in e. rewrite <- e. now apply translation. }
   Defined.
 
-  
-  Variable subst_form : (fin -> term) -> form -> form.
-  Variable translation_subst : forall sigma q, «subst_form sigma q» = subst_form sigma «q».
-  Lemma translation_subst_conj sigma q: «subst_form sigma (inj q)» = subst_form sigma «inj q».
-  Proof. destruct q; repeat now rewrite translation_subst.
-  Defined.
 End translation.

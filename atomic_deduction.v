@@ -1,6 +1,7 @@
 Require Export unscoped header_extensible.
 
 Require Export atomicsyntax implicativesyntax.
+Require Import classical_deduction.
 
 Reserved Notation "A ⊢ p" (at level 70).
 Reserved Notation "A ⊢A p" (at level 70).
@@ -16,12 +17,24 @@ Section atomic.
   Variable translate : form -> form.
   Definition translate_atomic (p : form_atomic) : form := ¬¬(inj p).
   Notation "« p »" := (translate p).
+  Notation "«/ A »" := (map translate A).
 
+  Variable translation_inj : forall p, «inj p» = translate_atomic  p.
   Variable subst_form : (fin -> term) -> form -> form.
+  Variable subst_form_inj : forall sigma p, subst_form sigma (inj p) = subst_form_atomic _ _ sigma p.
+  Variable subst_dn : forall sigma p, subst_form sigma (¬¬p) = ¬¬(subst_form sigma p).
   Variable translation_subst : forall sigma q, «subst_form sigma q» = subst_form sigma «q».
-  Lemma translation_subst_atm sigma q : «subst_form sigma (inj q)» = subst_form sigma «inj q».
-  Proof. destruct q; repeat now rewrite translation_subst.
-  Defined.
   Lemma translation_subst_atm sigma p : « subst_form_atomic _ _ sigma p » = subst_form sigma (translate_atomic p).
   Proof. destruct p. cbn. unfold Pred_. rewrite translation_inj. unfold translate_atomic. rewrite subst_dn.
     rewrite subst_form_inj. reflexivity.
+  Defined.
+
+  Variable nd : list form -> form -> Prop.
+  Notation "A ⊢ p" := (nd A p) (at level 70).
+  Variable cnd_retract : forall A p, nd_classic _ _ nd A p -> A ⊢ p.
+  Variable translation_bwd : forall A p,  «/A» ⊢ «p» -> A ⊢ p.
+  Lemma translation_bwd_imp A p: «/A» ⊢ translate_atomic p -> A ⊢ inj p.
+  Proof. destruct p; cbn. intro. apply translation_bwd. now rewrite translation_inj.
+  Defined.
+
+End atomic.

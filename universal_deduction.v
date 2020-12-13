@@ -1,11 +1,13 @@
 Require Export unscoped header_extensible.
 
 Require Export implicativesyntax universalsyntax termsyntax.
+Require Import classical_deduction.
 
 Reserved Notation "A ⊢ p" (at level 70).
 Reserved Notation "A ⊢U p" (at level 70).
 
 Section universals.
+  Context {Sigma : Signature}.
 
   Variable form : Type.
   Variable retract_univ : retract (form_universal form) form.
@@ -32,12 +34,12 @@ Section universals.
   Defined.
 
   Variable translate : form -> form.
+  Notation "« p »" := (translate p).
+  Notation "«/ A »" := (map translate A).
   Definition translate_univ (p : form_universal form) : _ := match p with
     | All _ q => ∀ (translate q)
   end.
 
-
-End universals.
   Variable translation_inj : forall p, «inj p» = translate_univ  p.
   Variable subst_form_inj : forall sigma p, subst_form sigma (inj p) = subst_form_universal _ subst_form _ sigma p.
   Variable translation_subst : forall sigma q, «subst_form sigma q» = subst_form sigma «q».
@@ -45,43 +47,50 @@ End universals.
   Proof. destruct p. cbn. rewrite subst_form_inj. unfold All_. rewrite translation_inj. cbn. apply congr_All_, translation_subst.
   Defined.
 
+  Variable translation_bwd : forall A p,  «/A» ⊢ «p» -> A ⊢ p.
+  Lemma translation_bwd_univ A p: «/A» ⊢ translate_univ p -> A ⊢ inj p.
+  Proof. destruct p; cbn; intro; apply translation_bwd; rewrite translation_inj; auto.
+  Defined.
+
+End universals.
+
 Notation "A ⊢U p" := (nd_univ A p) (at level 70).
 
 Section translation.
-Require Import classical_deduction.
   Context {Sigma : Signature}.
+
   Variable form : Type.
+  Variable nd : list form -> form -> Prop.
+  Variable cnd : list form -> form -> Prop.
   Variable subst_form : (fin -> term) -> form -> form.
   Variable retract_univ : retract (form_universal form) form.
   Variable translate : form -> form.
 
-  Notation "A ⊢[ nd ] p" := (@nd_univ form _ subst_form nd A p) (at level 70).
+  Notation "A ⊢[ nd ] p" := (@nd_univ _ form _ subst_form nd A p) (at level 70).
   Notation "« p »" := (translate p).
   Notation "«/ A »" := (map translate A).
 
-  Variable translation_inj : forall p, «inj p» = inj (translate_univ _ translate p).
+  Variable translation_inj : forall p, «inj p» = translate_univ _ _ translate p.
   Variable translation_subst : forall sigma q, «subst_form sigma q» = subst_form sigma «q».
 
-  Lemma translation_subst_univ sigma q: «subst_form sigma (inj q)» = subst_form sigma «inj q».
+(*   Lemma translation_subst_univ sigma q: «subst_form sigma (inj q)» = subst_form sigma «inj q».
   Proof. destruct q. rewrite translation_subst. rewrite translation_inj. auto.
-  Defined.
+  Defined. *)
 
   Lemma translation_map A: up_ctx form subst_form (map translate A) = map translate (up_ctx form subst_form A).
   Proof. unfold up_ctx. repeat rewrite map_map. apply map_ext. intro p. symmetry. apply translation_subst.
   Qed.
 
-  Variable nd : list form -> form -> Prop.
-  Variable cnd : list form -> form -> Prop.
+  Variable translation : forall A p, cnd A p -> nd «/A» «p».
+  Lemma translation_univ A p: A ⊢[cnd] p -> «/A» ⊢[nd] «p».
+  Proof. destruct 1.
+    -rewrite translation_inj. cbn. apply ndUI. rewrite translation_map. now apply translation.
+    -rewrite translation_subst. apply ndUE. { pose (translation_inj (All _ p)). cbn in e. rewrite <- e. now apply translation. }
+  Defined.
 
   Variable embed : forall A p, nd A p -> cnd A p.
   Lemma embed_univ A p : A ⊢[nd] p -> A ⊢[cnd] p.
   Proof. destruct 1; [ now apply ndUI, embed | now apply ndUE, embed ].
   Defined.
 
-  Variable translation : forall A p, cnd A p -> nd «/A» «p».
-  Lemma translation_univ A p: A ⊢[cnd] p -> «/A» ⊢[nd] «p».
-  Proof. destruct 1.
-    +rewrite translation_inj. cbn. apply ndUI. rewrite translation_map. now apply translation.
-    +rewrite translation_subst. apply ndUE. { pose (translation_inj (All _ p)). cbn in e. rewrite <- e. now apply translation. }
-  Defined.
 End translation.

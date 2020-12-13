@@ -5,7 +5,6 @@ Class Signature := B_S { Funcs : Type; fun_ar : Funcs -> nat ; Preds : Type; pre
 Section term.
 Context {Sigma : Signature}.
 
-Section term.
 Inductive term  : Type :=
   | var_term : ( fin ) -> term 
   | Func : forall (f : Funcs), ( vect (fun_ar f) (term  ) ) -> term .

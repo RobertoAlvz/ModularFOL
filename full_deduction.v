@@ -2,7 +2,7 @@ Require Export implicative_deduction universal_deduction atomic_deduction conjun
 
 Require Import fullsyntax.
 
-Section deduction_systems.
+Section translation.
 Context {Sigma : Signature}.
 
 Inductive nd : list form -> form -> Prop := 
@@ -20,23 +20,20 @@ Proof. destruct H; intro Hinc; [apply ndI | apply ndU| apply ndC | apply ndD | a
   -now apply (weakening_conj form _ nd weakening A B).
   -now apply (weakening_disj form _ nd weakening A B).
   -now apply (weakening_exst form _ subst_form nd weakening A B).
-Defined.
+Defined. 
 
 
 Fixpoint translate (p : form) : form := match p with
   | In_form_atomic p      => translate_atomic form _ _ p
-  | In_form_implicative p => translate_imp form translate p
-  | In_form_universal p   => translate_univ form translate p
-  | In_form_conjunctive p => translate_conj form translate p
+  | In_form_implicative p => translate_imp form _ translate p
+  | In_form_universal p   => translate_univ form _ translate p
+  | In_form_conjunctive p => translate_conj form _ translate p
   | In_form_disjunctive p => translate_disj form _ _ translate p
   | In_form_existential p => translate_exst form _ _ translate p
 end.
 
 Notation "« p »" := (translate p).
 Notation "«/ A »" := (map translate A).
-
-
-(*   Notation "A |- p" := (nd_classic _ _ nd A p) (at level 70).*)
 
 Reserved Notation "A |- p" (at level 70).
 Inductive cnd : list form -> form -> Prop :=
@@ -61,7 +58,7 @@ Defined.
 
 Fixpoint translation_subst sigma p : « subst_form sigma p » = subst_form sigma « p ».
 Proof. destruct p.
-  -apply translation_subst_atm. { intro. reflexivity. } {intros. reflexivity. } {intros. reflexivity. }
+  -apply translation_subst_atm. { intro. reflexivity. } { intros. reflexivity. } {intros. reflexivity. }
   -apply translation_subst_imp. { intro. reflexivity. } { intros. reflexivity. } apply translation_subst.
   -apply translation_subst_univ. { intro. reflexivity. } { intros. reflexivity. } apply translation_subst.
   -apply translation_subst_conj. { intro. reflexivity. } { intros. reflexivity. } apply translation_subst.
@@ -69,6 +66,7 @@ Proof. destruct p.
   -apply translation_subst_exst. { intro. reflexivity. } { intros. reflexivity. } {intros. reflexivity. } apply translation_subst.
 Defined.
 
+(***********)
 
 Lemma dn_int A p : A ⊢ p -> A ⊢ (¬¬p).
 Proof. intro. apply ndI, ndII, ndI, (ndIE _ _ _ _ p).
@@ -78,29 +76,26 @@ Defined.
 
 Fixpoint embed A p (H : A ⊢ p) : A |- p.
 Proof. destruct H; [ apply cndI | apply cndU | apply cndC | apply cndD | apply cndE ].
-  -now apply (embed_imp _ _ nd cnd embed).
-  -now apply (embed_univ _ _ _ nd cnd embed).
-  -now apply (embed_conj _ _ nd cnd embed).
-  -now apply (embed_disj _ _ nd cnd embed).
-  -now apply (embed_exst _ _ _ nd cnd embed).
+  -now apply (embed_imp _ nd cnd _ embed).
+  -now apply (embed_univ _  nd cnd _ _ embed).
+  -now apply (embed_conj _ nd cnd _ embed).
+  -now apply (embed_disj _ nd cnd _ embed).
+  -now apply (embed_exst _ nd cnd _ _ embed).
 Defined.
-
-Fixpoint translation_subst sigma p : « subst_form sigma p » = subst_form sigma « p ».
-Proof. destruct p; destruct f; auto.
-Admitted.
-(* Defined. *)
 
 Lemma dne A p : A |- (¬¬p) -> A |- p.
 Proof. intro. now apply cndDN, ndDN. Defined.
 
 Fixpoint translation A p (H : A |- p) : «/A» ⊢ «p».
-Proof. destruct H.
-  -now apply ndI, (translation_imp _ _ _ (fun _ => eq_refl) nd cnd).
-  -now apply ndU, (translation_univ form _ _ _ (fun _ => eq_refl) translation_subst nd cnd).
-  -now apply ndC, (translation_conj _ _ _ (fun _ => eq_refl) nd cnd).
-  -now apply ndD, (translation_disj _ _ _ _ (fun _ => eq_refl) nd cnd embed).
-  -now apply ndE, (translation_exst _ _ _ _ _ (fun _ => eq_refl) translation_subst nd cnd embed).
-  -destruct H. apply (translation_class _ _ translate nd cnd dne translation).
-Defined.
+Proof. destruct H; [apply ndI | apply ndU | apply ndC | apply ndD | apply ndE | ].
+  -apply (translation_imp _ nd cnd). { intros. reflexivity. } apply translation. assumption.
+  -apply (translation_univ _ nd cnd). { intros. reflexivity. } apply translation_subst. apply translation. assumption.
+  -apply (translation_conj _ nd cnd). { intros. reflexivity. } apply translation. assumption.
+  -apply (translation_disj _ nd cnd _ retract_form_implicative_form). { intros. reflexivity. }
+   apply embed. admit. apply weakening. admit. apply translation. assumption.
+  -apply (translation_exst _ nd cnd _ retract_form_implicative_form). { intros. reflexivity. } apply translation_subst. apply embed. admit. apply weakening. apply translation. assumption.
+  -admit.
+Admitted.
 
-End deduction_systems.
+
+End translation.

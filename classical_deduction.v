@@ -31,14 +31,14 @@ Notation "A ⊢c p" := (nd_classic A p) (at level 70).
 Section translation.
 
   Variable form : Type.
+  Variable nd : list form -> form -> Prop.
+  Variable cnd : list form -> form -> Prop.
   Variable retract_implicative : included form_implicative form.
+
   Notation "A ⊢[ nd ] p" := (@nd_classic form _ nd A p) (at level 70).
   Variable translate : form -> form.
   Notation "« p »" := (translate p).
   Notation "«/ A »" := (map translate A).
-
-  Variable nd : list form -> form -> Prop.
-  Variable cnd : list form -> form -> Prop.
   Variable dne : forall A p, cnd A (¬¬p) -> cnd A p.
 
   Variable embed : forall A p, nd A p -> cnd A p.
