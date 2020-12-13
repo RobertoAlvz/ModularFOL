@@ -33,7 +33,7 @@ Section atomic.
   Notation "A ⊢ p" := (nd A p) (at level 70).
   Variable cnd_retract : forall A p, nd_classic _ _ nd A p -> A ⊢ p.
   Variable translation_bwd : forall A p,  «/A» ⊢ «p» -> A ⊢ p.
-  Lemma translation_bwd_imp A p: «/A» ⊢ translate_atomic p -> A ⊢ inj p.
+  Lemma translation_bwd_atm A p: «/A» ⊢ translate_atomic p -> A ⊢ inj p.
   Proof. destruct p; cbn. intro. apply translation_bwd. now rewrite translation_inj.
   Defined.
 

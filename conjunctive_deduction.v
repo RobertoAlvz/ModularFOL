@@ -40,9 +40,9 @@ Section Conjunctive.
   Notation "«/ A »" := (map translate A).
 
   Variable translation_inj : forall p, translate (inj p) = translate_conj  p.
-  Variable translation_bwd : forall A p, A ⊢ translate p -> A ⊢ p.
-  Lemma translation_bwd_conj A p: A ⊢ (translate_conj p) -> A ⊢_conj inj p.
-  Proof. destruct p; cbn. intro. apply ndCI; apply agree;
+  Variable translation_bwd : forall A p, «/A» ⊢ translate p -> A ⊢ p.
+  Lemma translation_bwd_conj A p: «/A» ⊢ (translate_conj p) -> A ⊢ inj p.
+  Proof. destruct p; cbn. intro. apply agree, ndCI; apply agree;
     [ apply (ndCE1 _ _ f0) | apply (ndCE2 _ f) ];
     apply translation_bwd; now rewrite translation_inj.
   Defined.

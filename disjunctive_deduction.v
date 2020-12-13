@@ -44,11 +44,10 @@ Section Disjunctive.
   Variable dni : forall A p, A ⊢ p -> A ⊢ (¬¬p).
   Variable imp_nd : forall A p, nd_imp _ _ nd A p -> A ⊢ p.
   Variable translation_inj : forall p, «inj p» = translate_disj  p.
-  Variable translation_bwd : forall A p, A ⊢ «p» -> A ⊢ p.
-  Lemma translation_bwd_disj A p: A ⊢ (translate_disj p) -> A ⊢_disj inj p.
-  Proof. destruct p; cbn.  intro. apply dne in H. apply (ndDE _ _ _ (f ∨ f0)) in H. assumption.
-    -apply agree, ndDI1, translation_bwd, imp_nd, ndHyp. now left.
-    -apply agree, ndDI2, translation_bwd, imp_nd, ndHyp. now left.
+  Variable translation_bwd : forall A p, «/A» ⊢ «p» -> A ⊢ p.
+  Lemma translation_bwd_disj A p: «/A» ⊢ (translate_disj p) -> A ⊢ inj p.
+  Proof. destruct p; cbn.  intro. apply dne in H. apply (ndDE _ _ _ «f ∨ f0») in H; [ now apply translation_bwd, agree | | ];
+    rewrite translation_inj; cbn; now apply dni, (weakening «/A»), incl_tl.
   Defined.
 
   Variable subst_form : (fin -> term) -> form -> form.

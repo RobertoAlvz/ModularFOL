@@ -44,10 +44,10 @@ Section Existential.
   Variable subst_var: forall p, subst_form (var_term 0, var_term) p = p.
   Variable imp_nd : forall A p, nd_imp _ _ nd A p -> A ⊢ p.
   Variable translation_inj : forall p, «inj p» = translate_exst  p.
-  Variable translation_bwd : forall A p, A ⊢ «p» -> A ⊢ p.
-  Lemma translation_bwd_disj A p: A ⊢_exst (translate_exst p) -> A ⊢_exst inj p.
-  Proof. destruct p; cbn. intro. apply agree, dne in H. apply (ndEE _ _ (∃ f)) in H. assumption.
-    -apply agree, (ndEI _ _ (var_term 0)). rewrite subst_var. apply translation_bwd, imp_nd, ndHyp. now left.
+  Variable translation_bwd : forall A p, «/A» ⊢ «p» -> A ⊢ p.
+  Lemma translation_bwd_exst A p: «/A» ⊢ (translate_exst p) -> A ⊢ inj p.
+  Proof. destruct p; cbn. intro. apply dne in H. apply (ndEE _ _ «∃ f») in H. now apply translation_bwd, agree.
+    -rewrite translation_inj. cbn. now apply dni, (weakening «/A»), incl_tl.
   Defined.
 
 
