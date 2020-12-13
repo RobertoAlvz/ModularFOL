@@ -68,10 +68,16 @@ Defined.
 
 (***********)
 
-Lemma dn_int A p : A ⊢ p -> A ⊢ (¬¬p).
+Lemma dni A p : A ⊢ p -> A ⊢ (¬¬p).
 Proof. intro. apply ndI, ndII, ndI, (ndIE _ _ _ _ p).
   -apply ndI,ndHyp. now left.
   -now apply (weakening A), incl_tl.
+Defined.
+
+Lemma dni_c A p : A ⊢c p -> A ⊢c (¬¬p).
+Proof. intro. apply cndI, ndII, cndI, (ndIE _ _ _ _ p).
+  -apply cndI,ndHyp. now left.
+  -now apply (weakening_c A), incl_tl.
 Defined.
 
 Fixpoint embed A p (H : A ⊢ p) : A ⊢c p.
@@ -86,16 +92,35 @@ Defined.
 Lemma dne A p : A ⊢c (¬¬p) -> A ⊢c p.
 Proof. intro. now apply cndDN, ndDN. Defined.
 
-Fixpoint translation A p (H : A ⊢c p) : «/A» ⊢ «p».
+Fixpoint translation_fwd A p (H : A ⊢c p) : «/A» ⊢ «p».
 Proof. destruct H; [apply ndI | apply ndU | apply ndC | apply ndD | apply ndE | ].
-  -apply (translation_imp _ nd cnd). { intros. reflexivity. } apply translation. assumption.
-  -apply (translation_univ _ nd cnd). { intros. reflexivity. } apply translation_subst. apply translation. assumption.
-  -apply (translation_conj _ nd cnd). { intros. reflexivity. } apply translation. assumption.
+  -apply (translation_imp _ nd cnd). { intros. reflexivity. } apply translation_fwd. assumption.
+  -apply (translation_univ _ nd cnd). { intros. reflexivity. } apply translation_subst. apply translation_fwd. assumption.
+  -apply (translation_conj _ nd cnd). { intros. reflexivity. } apply translation_fwd. assumption.
   -apply (translation_disj _ nd cnd _ retract_form_implicative_form). { intros. reflexivity. }
-   apply embed. admit. apply weakening. admit. apply translation. assumption.
-  -apply (translation_exst _ nd cnd _ retract_form_implicative_form). { intros. reflexivity. } apply translation_subst. apply embed. admit. apply weakening. apply translation. assumption.
+   apply embed. admit. apply weakening. admit. apply translation_fwd. assumption.
+  -apply (translation_exst _ nd cnd _ retract_form_implicative_form). { intros. reflexivity. }
+   apply translation_subst. apply embed. admit. apply weakening. apply translation_fwd. assumption.
   -admit.
 Admitted.
 
+Fixpoint translation_bwd A (p : form) : «/A» ⊢c «p» -> A ⊢c p.
+Proof. destruct p; cbn; intro.
+  -apply dne in H. apply translation_bwd. cbn. now apply dni_c.
+  -apply (translation_bwd_imp _ retract_form_implicative_form _ translate). {intro. reflexivity. } apply translation_bwd. assumption.
+  -apply (translation_bwd_univ _ retract_form_universal_form _ translate). {intro. reflexivity. } apply translation_bwd. assumption.
+  -apply (translation_bwd_conj _ retract_form_conjunctive_form _ cndC translate). {intro. reflexivity. } apply translation_bwd. assumption.
+  -apply (translation_bwd_disj _ retract_form_disjunctive_form _ weakening_c retract_form_implicative_form translate).
+    apply cndD. apply dne. apply dni_c. { intros. reflexivity. } apply translation_bwd. assumption.
+  -apply (translation_bwd_exst _ retract_form_existential_form subst_form _ weakening_c retract_form_implicative_form translate).
+    apply cndE. apply dne. apply dni_c. { intros. reflexivity. } apply translation_bwd. assumption.
+(* Defined.
+ *)Admitted.
+
+Theorem translation A p: A ⊢c p <-> «/A» ⊢ «p».
+Proof. split.
+  -apply translation_fwd.
+  -intro. now apply translation_bwd, embed.
+Qed.
 
 End translation.

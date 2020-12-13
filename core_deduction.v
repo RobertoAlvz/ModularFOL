@@ -39,17 +39,23 @@ end.
 Notation "« p »" := (translate p).
 Notation "«/ A »" := (map translate A).
 
+Fixpoint embed A p (H : A ⊢ p) : A ⊢c p.
+Proof. destruct H; [ apply cndI | apply cndU ].
+  -now apply (embed_imp _ nd cnd _ embed).
+  -now apply (embed_univ _  nd cnd _ _ embed).
+Defined.
+
 Fixpoint translation_subst sigma p : « subst_form sigma p » = subst_form sigma « p ».
 Proof. destruct p.
   -apply translation_subst_imp. { intro. reflexivity. } { intros. reflexivity. } apply translation_subst.
   -apply translation_subst_univ. { intro. reflexivity. } { intros. reflexivity. } apply translation_subst.
 Defined.
 
-Fixpoint translation A p (H : A ⊢c p) : «/A» ⊢ «p».
+Fixpoint translation_fwd A p (H : A ⊢c p) : «/A» ⊢ «p».
 Proof. destruct H; [apply ndI | apply ndU | ].
-  -apply (translation_imp _  nd cnd). {intro. reflexivity. } apply translation. assumption.
-  -apply (translation_univ _ nd cnd). {intro. reflexivity. } apply translation_subst. apply translation. assumption.
-  -apply (translation_class _ nd cnd retract_form_implicative_form). apply dne. apply translation. assumption.
+  -apply (translation_imp _  nd cnd). {intro. reflexivity. } apply translation_fwd. assumption.
+  -apply (translation_univ _ nd cnd). {intro. reflexivity. } apply translation_subst. apply translation_fwd. assumption.
+  -apply (translation_class _ nd cnd retract_form_implicative_form). apply dne. apply translation_fwd. assumption.
 (* Defined.
  *)Admitted.
 
@@ -59,5 +65,11 @@ Proof. destruct p; cbn; intro.
   -apply (translation_bwd_univ _ retract_form_universal_form _ translate). {intro. reflexivity. } apply translation_bwd. assumption.
 (* Defined.
  *)Admitted.
+
+Theorem translation A p: A ⊢c p <-> «/A» ⊢ «p».
+Proof. split.
+  -apply translation_fwd.
+  -intro. now apply translation_bwd, embed.
+Qed.
 
 End translation.
