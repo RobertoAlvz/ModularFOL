@@ -2,7 +2,7 @@ Require Export implicativesyntax.
 Require Import classical_deduction.
 
 Reserved Notation "A ⊢ p" (at level 70).
-Reserved Notation "A ⊢I p" (at level 70).
+Reserved Notation "A ⊢_imp p" (at level 70).
 
 
 Section implicative.
@@ -21,14 +21,14 @@ Section implicative.
   Notation "A ⊢ p" := (nd A p) (at level 70).
 
   Inductive nd_imp (A : list form) : form -> Prop :=
-    | ndHyp p : In p A -> A ⊢I p
-    | ndExp p : A ⊢ ⊥  -> A ⊢I p
-    | ndII p q : (p :: A) ⊢ q -> A ⊢I p ~> q
-    | ndIE p q : A ⊢ p ~> q -> A ⊢ p -> A ⊢I q
-  where "A ⊢I p" := (nd_imp A p).
+    | ndHyp p : In p A -> A ⊢_imp p
+    | ndExp p : A ⊢ ⊥  -> A ⊢_imp p
+    | ndII p q : (p :: A) ⊢ q -> A ⊢_imp p ~> q
+    | ndIE p q : A ⊢ p ~> q -> A ⊢ p -> A ⊢_imp q
+  where "A ⊢_imp p" := (nd_imp A p).
 
   Variable weakening : forall A B p, A ⊢ p -> incl A B -> B ⊢ p.
-  Lemma weakening_imp A B p : A ⊢I p -> incl A B -> B ⊢I p.
+  Lemma weakening_imp A B p : A ⊢_imp p -> incl A B -> B ⊢_imp p.
   Proof. intro. revert B. destruct H; intros B Hinc;
     [ now apply ndHyp, (Hinc p)
     | now apply ndExp, (weakening A) 
@@ -64,7 +64,7 @@ Section implicative.
 
 End implicative.
 
-Notation "A ⊢I p" := (nd_imp A p) (at level 70).
+Notation "A ⊢_imp p" := (nd_imp A p) (at level 70).
 
 Section translation.
   Context {Sigma : Signature}.

@@ -3,7 +3,7 @@ Require Export existentialsyntax implicativesyntax.
 Require Import classical_deduction implicative_deduction.
 
 Reserved Notation "A ⊢ p" (at level 70).
-Reserved Notation "A ⊢E p" (at level 70).
+Reserved Notation "A ⊢_exst p" (at level 70).
 
 Notation "∃ p" := (inj (Exist _ p)) (at level 60).
 
@@ -18,12 +18,12 @@ Section Existential.
   Notation "A ⊢ p" := (nd A p) (at level 70).
 
   Inductive nd_exst (A : list form) : form -> Prop :=
-    | ndEI p t : A ⊢ subst_form (scons t (var_term)) p -> A ⊢E (∃ p)
-    | ndEE p q : A ⊢ (∃ p) -> p :: A ⊢ q -> A ⊢E q
-  where "A ⊢E p" := (nd_exst A p).
+    | ndEI p t : A ⊢ subst_form (scons t (var_term)) p -> A ⊢_exst (∃ p)
+    | ndEE p q : A ⊢ (∃ p) -> p :: A ⊢ q -> A ⊢_exst q
+  where "A ⊢_exst p" := (nd_exst A p).
 
   Variable weakening : forall A B p, A ⊢ p -> incl A B -> B ⊢ p.
-  Lemma weakening_exst A B p : A ⊢E p -> incl A B -> B ⊢E p.
+  Lemma weakening_exst A B p : A ⊢_exst p -> incl A B -> B ⊢_exst p.
   Proof. destruct 1; intro Hinc; [ now apply (ndEI _ p t), (weakening A) | apply (ndEE _ p q) ].
     -now apply (weakening A).
     -apply (weakening (p::A)), incl_cons; [assumption | now left | now apply incl_tl ].
@@ -38,14 +38,14 @@ Section Existential.
   Notation "« p »" := (translate p).
   Notation "«/ A »" := (map translate A).
 
-  Variable agree : forall A p, A ⊢E p -> A ⊢ p.
+  Variable agree : forall A p, A ⊢_exst p -> A ⊢ p.
   Variable dne : forall A p, A ⊢ (¬¬p) -> A ⊢ p.
   Variable dni : forall A p, A ⊢ p -> A ⊢ (¬¬p).
   Variable subst_var: forall p, subst_form (var_term 0, var_term) p = p.
   Variable imp_nd : forall A p, nd_imp _ _ nd A p -> A ⊢ p.
   Variable translation_inj : forall p, «inj p» = translate_exst  p.
   Variable translation_bwd : forall A p, A ⊢ «p» -> A ⊢ p.
-  Lemma translation_bwd_disj A p: A ⊢E (translate_exst p) -> A ⊢E inj p.
+  Lemma translation_bwd_disj A p: A ⊢_exst (translate_exst p) -> A ⊢_exst inj p.
   Proof. destruct p; cbn. intro. apply agree, dne in H. apply (ndEE _ _ (∃ f)) in H. assumption.
     -apply agree, (ndEI _ _ (var_term 0)). rewrite subst_var. apply translation_bwd, imp_nd, ndHyp. now left.
   Defined.

@@ -4,7 +4,7 @@ Require Export conjunctivesyntax .
 Require Import classical_deduction.
 
 Reserved Notation "A ⊢ p" (at level 70).
-Reserved Notation "A ⊢C p" (at level 70).
+Reserved Notation "A ⊢_conj p" (at level 70).
 
 Notation "p ∧ q" := (inj (Conj _ p q)) (at level 60).
 
@@ -18,14 +18,14 @@ Section Conjunctive.
   Notation "A ⊢ p" := (nd A p) (at level 70).
 
   Inductive nd_conj (A : list form) : form -> Prop :=
-    | ndCI p q : A ⊢ p -> A ⊢ q -> A ⊢C (p ∧ q)
-    | ndCE1 p q : A ⊢ p ∧ q -> A ⊢C p
-    | ndCE2 p q : A ⊢ p ∧ q -> A ⊢C q
-  where "A ⊢C p" := (nd_conj A p).
-  Variable agree : forall A p, A ⊢C p -> A ⊢ p.
+    | ndCI p q : A ⊢ p -> A ⊢ q -> A ⊢_conj (p ∧ q)
+    | ndCE1 p q : A ⊢ p ∧ q -> A ⊢_conj p
+    | ndCE2 p q : A ⊢ p ∧ q -> A ⊢_conj q
+  where "A ⊢_conj p" := (nd_conj A p).
+  Variable agree : forall A p, A ⊢_conj p -> A ⊢ p.
 
   Variable weakening : forall A B p, A ⊢ p -> incl A B -> B ⊢ p.
-  Lemma weakening_conj A B p : A ⊢C p -> incl A B -> B ⊢C p.
+  Lemma weakening_conj A B p : A ⊢_conj p -> incl A B -> B ⊢_conj p.
   Proof. destruct 1; intro Hinc.
     -apply ndCI. all: now apply (weakening A).
     -now apply (ndCE1 _ _ q), (weakening A).
@@ -41,7 +41,7 @@ Section Conjunctive.
 
   Variable translation_inj : forall p, translate (inj p) = translate_conj  p.
   Variable translation_bwd : forall A p, A ⊢ translate p -> A ⊢ p.
-  Lemma translation_bwd_conj A p: A ⊢ (translate_conj p) -> A ⊢C inj p.
+  Lemma translation_bwd_conj A p: A ⊢ (translate_conj p) -> A ⊢_conj inj p.
   Proof. destruct p; cbn. intro. apply ndCI; apply agree;
     [ apply (ndCE1 _ _ f0) | apply (ndCE2 _ f) ];
     apply translation_bwd; now rewrite translation_inj.

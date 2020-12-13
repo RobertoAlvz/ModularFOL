@@ -3,7 +3,7 @@ Require Export disjunctivesyntax implicativesyntax.
 Require Import classical_deduction implicative_deduction.
 
 Reserved Notation "A ⊢ p" (at level 70).
-Reserved Notation "A ⊢D p" (at level 70).
+Reserved Notation "A ⊢_disj p" (at level 70).
 
 Notation "p ∨ q" := (inj (Disj _ p q)) (at level 60).
 
@@ -17,13 +17,13 @@ Section Disjunctive.
   Notation "A ⊢ p" := (nd A p) (at level 70).
 
   Inductive nd_disj (A : list form) : form -> Prop :=
-    | ndDI1 p q : A ⊢ p -> A ⊢D p ∨ q
-    | ndDI2 p q : A ⊢ q -> A ⊢D p ∨ q
-    | ndDE p q r: A ⊢ p ∨ q -> p::A ⊢ r -> q::A ⊢ r -> A ⊢D r
-  where "A ⊢D p" := (nd_disj A p).
+    | ndDI1 p q : A ⊢ p -> A ⊢_disj p ∨ q
+    | ndDI2 p q : A ⊢ q -> A ⊢_disj p ∨ q
+    | ndDE p q r: A ⊢ p ∨ q -> p::A ⊢ r -> q::A ⊢ r -> A ⊢_disj r
+  where "A ⊢_disj p" := (nd_disj A p).
 
   Variable weakening : forall A B p, A ⊢ p -> incl A B -> B ⊢ p.
-  Lemma weakening_disj A B p : A ⊢D p -> incl A B -> B ⊢D p.
+  Lemma weakening_disj A B p : A ⊢_disj p -> incl A B -> B ⊢_disj p.
   Proof. destruct 1; intro Hinc; [ now apply ndDI1, (weakening A) | now apply ndDI2, (weakening A) | ].
     -apply (ndDE _ p q). now apply (weakening A).
       +apply (weakening (p::A)), incl_cons; [assumption | now left | now apply incl_tl ].
@@ -39,13 +39,13 @@ Section Disjunctive.
   Notation "« p »" := (translate p).
   Notation "«/ A »" := (map translate A).
 
-  Variable agree : forall A p, A ⊢D p -> A ⊢ p.
+  Variable agree : forall A p, A ⊢_disj p -> A ⊢ p.
   Variable dne : forall A p, A ⊢ (¬¬p) -> A ⊢ p.
   Variable dni : forall A p, A ⊢ p -> A ⊢ (¬¬p).
   Variable imp_nd : forall A p, nd_imp _ _ nd A p -> A ⊢ p.
   Variable translation_inj : forall p, «inj p» = translate_disj  p.
   Variable translation_bwd : forall A p, A ⊢ «p» -> A ⊢ p.
-  Lemma translation_bwd_disj A p: A ⊢ (translate_disj p) -> A ⊢D inj p.
+  Lemma translation_bwd_disj A p: A ⊢ (translate_disj p) -> A ⊢_disj inj p.
   Proof. destruct p; cbn.  intro. apply dne in H. apply (ndDE _ _ _ (f ∨ f0)) in H. assumption.
     -apply agree, ndDI1, translation_bwd, imp_nd, ndHyp. now left.
     -apply agree, ndDI2, translation_bwd, imp_nd, ndHyp. now left.

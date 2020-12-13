@@ -4,7 +4,7 @@ Require Export implicativesyntax universalsyntax termsyntax.
 Require Import classical_deduction.
 
 Reserved Notation "A ⊢ p" (at level 70).
-Reserved Notation "A ⊢U p" (at level 70).
+Reserved Notation "A ⊢_univ p" (at level 70).
 
 Section universals.
   Context {Sigma : Signature}.
@@ -23,12 +23,12 @@ Section universals.
 
   Definition up_ctx (A : list form) := map (subst_form (S >> var_term)) A.
   Inductive nd_univ (A : list form) : form -> Prop :=
-    | ndUI p : up_ctx A ⊢ p -> A ⊢U ∀ p
-    | ndUE p t : A ⊢ ∀ p -> A ⊢U subst_form (scons t (var_term)) p
-  where "A ⊢U p" := (nd_univ A p).
+    | ndUI p : up_ctx A ⊢ p -> A ⊢_univ ∀ p
+    | ndUE p t : A ⊢ ∀ p -> A ⊢_univ subst_form (scons t (var_term)) p
+  where "A ⊢_univ p" := (nd_univ A p).
 
   Variable weakening : forall A B p, A ⊢ p -> incl A B -> B ⊢ p.
-  Lemma weakening_univ A B p : A ⊢U p -> incl A B -> B ⊢U p.
+  Lemma weakening_univ A B p : A ⊢_univ p -> incl A B -> B ⊢_univ p.
   Proof. intro. revert B. destruct H; intros B Hinc; [ apply ndUI | now apply ndUE, (weakening A) ].
     -apply (weakening (up_ctx A) (up_ctx B)); [ assumption | unfold up_ctx ]. now apply incl_map.
   Defined.
@@ -54,7 +54,7 @@ Section universals.
 
 End universals.
 
-Notation "A ⊢U p" := (nd_univ A p) (at level 70).
+Notation "A ⊢_univ p" := (nd_univ A p) (at level 70).
 
 Section translation.
   Context {Sigma : Signature}.
