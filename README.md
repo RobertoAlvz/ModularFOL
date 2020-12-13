@@ -13,6 +13,11 @@ The individual features of the syntax are contained in `*syntax.v` files, which 
 
 The deduction predicates, and the instances of lemmas and definitions, are defined feature-wise in `*_deduction.v` files.
 
-The main results are in `core_deduction.v` and `full_deduction.v`, the former using a basic syntax containing only implication, falsity, and universal quantification, while the latter using the complete syntax.
+The main results are in `core_deduction.v` and `full_deduction.v`, the former using a basic syntax containing only implication, falsity, and universal quantification,
+while the latter using the complete syntax.
+
+The completed modular proofs are weakening, the embedding of intuitionistic into classical deduction, and the commutativity of translation and substitution of formulas.
+Unfortunatelly the proofs of the forward (classic to intuitionistic) translation for the disjunctive and existential features are incomplete,
+additionally the backward translation fails to pass the termination checker, as such the main lemmas are admitted.
 
 The development can be found on [github](https://github.com/RobertoAlvz/ModularFOL).
