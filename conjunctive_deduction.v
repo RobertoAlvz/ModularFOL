@@ -1,6 +1,6 @@
 Require Export unscoped header_extensible.
 
-Require Export conjunctivesyntax .
+Require Export implicativesyntax conjunctivesyntax.
 Require Import classical_deduction.
 
 Reserved Notation "A ⊢ p" (at level 70).
@@ -12,7 +12,7 @@ Section Conjunctive.
   Context {Sigma : Signature}.
 
   Variable form : Type.
-  Variable retract : retract (form_conjunctive form) form.
+  Variable retract_conj : retract (form_conjunctive form) form.
 
   Variable nd : list form -> form -> Prop.
   Notation "A ⊢ p" := (nd A p) (at level 70).
@@ -40,11 +40,15 @@ Section Conjunctive.
   Notation "«/ A »" := (map translate A).
 
   Variable translation_inj : forall p, translate (inj p) = translate_conj  p.
-  Variable translation_bwd : forall A p, «/A» ⊢ translate p -> A ⊢ p.
-  Lemma translation_bwd_conj A p: «/A» ⊢ (translate_conj p) -> A ⊢ inj p.
-  Proof. destruct p; cbn. intro. apply agree, ndCI; apply agree;
-    [ apply (ndCE1 _ _ f0) | apply (ndCE2 _ f) ];
-    apply translation_bwd; now rewrite translation_inj.
+  Variable translation_bwd : forall A p, A ⊢ translate p <-> A ⊢ p.
+  Lemma translation_bwd_conj A p: A ⊢ (translate_conj p) <-> A ⊢ inj p.
+  Proof. destruct p; cbn. split; intro.
+    -assert (H1 : A ⊢ «f»). {now apply agree,(ndCE1 _ _ «f0»). }
+     assert (H2 : A ⊢ «f0»). {now apply agree,(ndCE2 _ «f»). }
+      apply agree, ndCI; now apply translation_bwd.
+    -assert (H1 : A ⊢ f). {now apply agree,(ndCE1 _ _ f0). }
+     assert (H2 : A ⊢ f0). {now apply agree,(ndCE2 _ f). }
+      apply agree, ndCI; now apply translation_bwd. 
   Defined.
 
   Variable subst_form : (fin -> term) -> form -> form.
@@ -53,6 +57,21 @@ Section Conjunctive.
   Lemma translation_subst_conj sigma p :  « subst_form_conjunctive _ subst_form _ sigma p » = subst_form sigma (translate_conj p).
   Proof. destruct p; cbn. unfold Conj_. rewrite translation_inj. rewrite subst_form_inj. cbn. apply congr_Conj_; apply translation_subst.
   Defined.
+
+  Variable cut : forall A p q,  A ⊢ p -> (p :: A) ⊢ q -> A ⊢ q.
+  Variable retract_imp : retract (form_implicative form) form.
+  Variable agree_imp : forall A p, nd_imp _ _ nd A p -> A ⊢ p.
+  Variable translation_helper : forall A p, A ⊢ (¬¬«p») -> A ⊢ «p».
+  Lemma translation_helper_conj A p : A ⊢ (¬¬(translate_conj p)) -> A ⊢ translate_conj p.
+  Proof. destruct p. cbn. intro. apply (cut _ _ _ H), agree, ndCI; apply translation_helper, agree_imp,ndII.
+    -apply agree_imp,(ndIE _ _ _ _ (¬(«f»∧«f0»))),agree_imp,ndII,agree_imp,(ndIE _ _ _ _ «f»).
+     { apply agree_imp,ndHyp. right. now left. } { apply agree_imp,ndHyp. right. now left. }
+     apply agree,(ndCE1 _ _ «f0»),agree_imp,ndHyp. now left.
+    -apply agree_imp,(ndIE _ _ _ _ (¬(«f»∧«f0»))),agree_imp,ndII,agree_imp,(ndIE _ _ _ _ «f0»).
+     { apply agree_imp,ndHyp. right. now left. } { apply agree_imp,ndHyp. right. now left. }
+     apply agree,(ndCE2 _ «f»),agree_imp,ndHyp. now left.
+  Defined.
+
 
 End Conjunctive.
 

@@ -1,4 +1,5 @@
 Require Export implicativesyntax.
+Require Export implicative_deduction.
 
 Reserved Notation "A ⊢ p" (at level 70).
 Reserved Notation "A ⊢_c p" (at level 70).
@@ -45,10 +46,4 @@ Section translation.
   Proof. destruct 1. now apply ndDN, embed.
   Defined.
 
-  Variable dn_int : forall A p , nd A p -> nd A (¬¬p).
-
-  Variable translation : forall A p, cnd A p -> nd «/A» «p».
-  Lemma translation_class A p: A ⊢[cnd] p -> nd «/A» «p».
-  Proof. destruct 1. apply dne in H. now apply translation.
-  Defined.
 End translation.

@@ -11,7 +11,7 @@ Section Disjunctive.
   Context {Sigma : Signature}.
 
   Variable form : Type.
-  Variable retract : retract (form_disjunctive form) form.
+  Variable retract_disj : retract (form_disjunctive form) form.
 
   Variable nd : list form -> form -> Prop.
   Notation "A ⊢ p" := (nd A p) (at level 70).
@@ -40,14 +40,20 @@ Section Disjunctive.
   Notation "«/ A »" := (map translate A).
 
   Variable agree : forall A p, A ⊢_disj p -> A ⊢ p.
-  Variable dne : forall A p, A ⊢ (¬¬p) -> A ⊢ p.
-  Variable dni : forall A p, A ⊢ p -> A ⊢ (¬¬p).
-  Variable imp_nd : forall A p, nd_imp _ _ nd A p -> A ⊢ p.
+  Variable agree_cls : forall A p, nd_classic _ _ nd A p -> A ⊢ p.
+  Variable agree_imp : forall A p, nd_imp _ _ nd A p -> A ⊢ p.
   Variable translation_inj : forall p, «inj p» = translate_disj  p.
-  Variable translation_bwd : forall A p, «/A» ⊢ «p» -> A ⊢ p.
-  Lemma translation_bwd_disj A p: «/A» ⊢ (translate_disj p) -> A ⊢ inj p.
-  Proof. destruct p; cbn.  intro. apply dne in H. apply (ndDE _ _ _ «f ∨ f0») in H; [ now apply translation_bwd, agree | | ];
-    rewrite translation_inj; cbn; now apply dni, (weakening «/A»), incl_tl.
+  Variable translation_bwd : forall A p, A ⊢ «p» <-> A ⊢ p.
+  Lemma translation_bwd_disj A p: A ⊢ (translate_disj p) <-> A ⊢ inj p.
+  Proof. destruct p; cbn. split; intro.
+    -assert (Hc : A ⊢ «f» ∨ «f0»). { now apply agree_cls,ndDN. }
+      apply (ndDE _ _ _ (f ∨ f0)) in Hc. now apply agree.
+      apply agree,ndDI1,translation_bwd,agree_imp,ndHyp. now left.
+      apply agree,ndDI2,translation_bwd,agree_imp,ndHyp. now left.
+    -apply agree_imp,ndII,agree_imp,(ndIE _ _ _ _ («f»∨«f0»)). apply agree_imp,ndHyp. now left.
+      apply (weakening A). 2:now apply incl_tl. apply agree,(ndDE _ f f0). assumption.
+      apply agree,ndDI1,translation_bwd,agree_imp,ndHyp. now left.
+      apply agree,ndDI2,translation_bwd,agree_imp,ndHyp. now left.
   Defined.
 
   Variable subst_form : (fin -> term) -> form -> form.
@@ -57,6 +63,14 @@ Section Disjunctive.
   Lemma translation_subst_disj sigma p :  « subst_form_disjunctive _ subst_form _ sigma p » = subst_form sigma (translate_disj p).
   Proof. destruct p; cbn. unfold Disj_. rewrite translation_inj. cbn. rewrite subst_dn. repeat apply congr_Impl_.
     rewrite subst_form_inj. cbn. apply congr_Disj_; apply translation_subst. all: reflexivity.
+  Defined.
+
+  Variable cut : forall A p q,  A ⊢ p -> (p :: A) ⊢ q -> A ⊢ q.
+  Variable translation_helper : forall A p, A ⊢ (¬¬«p») -> A ⊢ «p».
+  Lemma translation_helper_disj A p : A ⊢ (¬¬(translate_disj p)) -> A ⊢ translate_disj p.
+  Proof. destruct p. cbn. intro. apply (cut _ _ _ H). apply agree_imp,ndII,agree_imp,(ndIE _ _ _ _ (¬¬¬(«f»∨«f0»))).
+    apply agree_imp,ndHyp. right. now left. apply agree_imp,ndII,agree_imp,(ndIE _ _ _ _ (¬(«f»∨«f0»))).
+    apply agree_imp,ndHyp. now left. apply agree_imp,ndHyp. right. now left.
   Defined.
 
 End Disjunctive.
@@ -82,23 +96,33 @@ Section translation.
   Proof. destruct 1; [ apply ndDI1 | apply ndDI2 | apply (ndDE _ _ _ _ p q) ]; now apply embed.
   Defined.
 
-  Variable imp_nd : forall A p, nd_imp form _ (nd_disj _ _ nd) A p -> A ⊢[nd] p.
+(*   Variable imp_nd : forall A p, nd_imp form _ (nd_disj _ _ nd) A p -> A ⊢[nd] p.*)
   Variable weakening : forall A B p, nd A p -> incl A B -> nd B p.
 
-  Lemma dn_int_disj A p: A ⊢[nd] p -> A ⊢[nd] (¬¬p).
+(*   Lemma dn_int_disj A p: A ⊢[nd] p -> A ⊢[nd] (¬¬p).
   Proof. intro. apply imp_nd, ndII, imp_nd, (ndIE _ _ _ _ p).
     -apply imp_nd, ndHyp. now left.
     -now apply (weakening_disj _ _ _ weakening A), incl_tl.
-  Qed.
+  Qed. *)
 
-  Variable disj_cnd : forall A p, cnd A p -> A ⊢[cnd] p.
+  Variable dni : forall A p, nd A p -> nd A (¬¬p).
+
+  Variable agree_cnd : forall A p, A ⊢[cnd] p -> cnd A p.
+  Variable agree_nd : forall A p, A ⊢[nd] p -> nd A p. 
+  Variable agree_cls : forall A p, nd_classic _ _ cnd A p -> cnd A p.
+  Variable agree_imp : forall A p, nd_imp _ _ nd A p -> nd A p.
+
   Variable translation : forall A p, cnd A p -> nd «/A» «p».
   Lemma translation_disj A p: A ⊢[cnd] p -> «/A» ⊢[nd] «p».
   Proof. destruct 1.
-    -rewrite translation_inj. cbn. now apply dn_int_disj, ndDI1, translation.
-    -rewrite translation_inj. cbn. now apply dn_int_disj, ndDI2, translation.
-    -apply (ndDE _ _ _ _ «p» «q»).
-
- Admitted.
-
+    -apply (ndDE _ _ _ _ «p» «q»); [ now apply agree_nd,ndDI1,translation | |];
+      rewrite translation_inj; cbn; apply dni,agree_nd; [ apply ndDI1 | apply ndDI2 ];
+      apply agree_imp,ndHyp; now left.
+    -apply (ndDE _ _ _ _ «p» «q»); [ now apply agree_nd,ndDI2,translation | |];
+      rewrite translation_inj; cbn; apply dni,agree_nd; [ apply ndDI1 | apply ndDI2 ];
+      apply agree_imp,ndHyp; now left.
+    - apply (ndDE _ _ _ _ «p» «q»). 2,3: rewrite <- map_cons; now apply translation.
+  Admitted.
+(*   Defined.
+ *)
 End translation.

@@ -1,6 +1,6 @@
 Require Export implicativesyntax.
-Require Import classical_deduction.
-
+(* Require Import classical_deduction.
+ *)
 Reserved Notation "A ⊢ p" (at level 70).
 Reserved Notation "A ⊢_imp p" (at level 70).
 
@@ -47,11 +47,32 @@ Section implicative.
   end.
 
   Variable translation_inj : forall p, «inj p» = translate_imp  p.
+  Variable agree : forall A p, nd_imp A p -> A ⊢ p.
 
-  Variable translation_bwd : forall A p,  «/A» ⊢ «p» -> A ⊢ p.
-  Lemma translation_bwd_imp A p: «/A» ⊢ translate_imp p -> A ⊢ inj p.
-  Proof. destruct p; cbn; intro; apply translation_bwd; rewrite translation_inj; auto.
+  Variable cut : forall A p q,  A ⊢ p -> (p :: A) ⊢ q -> A ⊢ q.
+  Variable translation_bwd : forall A p,  A ⊢ «p» <-> A ⊢ p.
+  Lemma translation_bwd_imp A p: A ⊢ translate_imp p <-> A ⊢ inj p.
+  Proof. destruct p; cbn; [ reflexivity |]. split; intro H; apply (cut _ _ _ H).
+    -apply agree,ndII,translation_bwd, agree,(ndIE _ «f»). apply agree,ndHyp. right. now left.
+     apply translation_bwd,agree,ndHyp. now left.
+    -apply agree,ndII,translation_bwd. apply agree,(ndIE _ f). apply agree,ndHyp. right. now left.
+     apply translation_bwd,agree,ndHyp. now left.
   Defined.
+
+(*   Variable dni : forall A p, A ⊢ p -> A ⊢ (¬¬p). *)
+
+  Variable translation_helper : forall A p, A ⊢ (¬¬«p») -> A ⊢ «p».
+  Lemma translation_helper_imp A p : A ⊢ (¬¬(translate_imp p)) -> A ⊢ translate_imp p.
+  Proof. destruct p; cbn; intro.
+    -apply agree,(ndIE _ (¬⊥)). assumption. apply agree,ndII,agree,ndHyp. now left.
+    -apply agree,ndII, translation_helper, agree,ndII,agree ,(ndIE _ (¬¬(«f»~>«f0»))).
+      +apply agree,ndII, agree,(ndIE _ (¬(«f»~>«f0»))). apply agree,ndHyp. now left. apply agree,ndII,agree,(ndIE _ «f0»).
+       apply agree,ndHyp. right. right. now left. apply agree,(ndIE _ «f»).
+       apply agree,ndHyp. now left.
+       apply agree,ndHyp. right. right. right. now left.
+      +apply (weakening A),incl_tl. assumption. now apply incl_tl.
+  Defined.
+
 
   Variable subst_form : (fin -> term) -> form -> form.
   Variable subst_form_inj : forall sigma p, subst_form sigma (inj p) = subst_form_implicative _ subst_form _ sigma p.

@@ -32,9 +32,20 @@ Section atomic.
   Variable nd : list form -> form -> Prop.
   Notation "A ⊢ p" := (nd A p) (at level 70).
   Variable cnd_retract : forall A p, nd_classic _ _ nd A p -> A ⊢ p.
-  Variable translation_bwd : forall A p,  «/A» ⊢ «p» -> A ⊢ p.
-  Lemma translation_bwd_atm A p: «/A» ⊢ translate_atomic p -> A ⊢ inj p.
+  Variable translation_bwd : forall A p,  A ⊢ «p» -> A ⊢ p.
+  Lemma translation_bwd_atm A p: A ⊢ translate_atomic p -> A ⊢ inj p.
   Proof. destruct p; cbn. intro. apply translation_bwd. now rewrite translation_inj.
+  Defined.
+
+  Variable cut : forall A p q,  A ⊢ p -> (p :: A) ⊢ q -> A ⊢ q.
+  Variable agree_imp : forall A p, nd_imp _ _ nd A p -> A ⊢ p.
+  Variable translation_helper : forall A p, A ⊢ (¬¬«p») -> A ⊢ «p».
+  Lemma translation_helper_atm A p : A ⊢ (¬¬(translate_atomic p)) -> A ⊢ translate_atomic p.
+  Proof. unfold translate_atomic. intro. apply (cut _ _ _ H).
+    apply agree_imp,ndII,agree_imp,(ndIE _ _ _ _ (¬¬¬(inj p))).
+    apply agree_imp,ndHyp. right. now left.
+    apply agree_imp,ndII,agree_imp,(ndIE _ _ _ _ (¬(inj p))). apply agree_imp,ndHyp. now left.
+    apply agree_imp,ndHyp. right. now left.
   Defined.
 
 End atomic.

@@ -66,7 +66,32 @@ Proof. destruct p.
   -apply translation_subst_exst. { intro. reflexivity. } { intros. reflexivity. } {intros. reflexivity. } apply translation_subst.
 Defined.
 
-(***********)
+Lemma cut A p q : A ⊢ p -> (p :: A) ⊢ q -> A ⊢ q.
+Proof.
+  intros. apply ndI,(ndIE _ _ _ _ p). now apply ndI,ndII. now apply (weakening A).
+Qed.
+
+Lemma cut_c A p q : A ⊢c p -> (p :: A) ⊢c q -> A ⊢c q.
+Proof.
+  intros. apply cndI,(ndIE _ _ _ _ p). now apply cndI,ndII. now apply (weakening_c A).
+Qed.
+
+Lemma subst_helper p: subst_form (var_term 0, var_term) (subst_form (up_term_term (S >> var_term)) p) = p.
+Proof. Admitted.
+
+Fixpoint translation_helper A p : A ⊢ (¬¬«p») -> A ⊢ «p».
+Proof. destruct p.
+  -eapply translation_helper_atm. apply cut. apply ndI.
+  -eapply translation_helper_imp. apply weakening. apply ndI. apply translation_helper.
+  -eapply (translation_helper_univ _ _ subst_form). { intros. reflexivity. }
+   apply ndU. apply cut. apply subst_helper. {intros. reflexivity. } apply ndI. fold translate. intros. now apply translation_helper.
+  -eapply translation_helper_conj. apply ndC. apply cut. apply ndI. apply translation_helper.
+  -eapply translation_helper_disj. apply ndI. apply cut.
+  -eapply translation_helper_exst. apply ndI. apply cut.
+Defined.
+
+Lemma translation_dn p : «¬¬p» = ¬¬«p».
+Proof. now reflexivity. Defined.
 
 Lemma dni A p : A ⊢ p -> A ⊢ (¬¬p).
 Proof. intro. apply ndI, ndII, ndI, (ndIE _ _ _ _ p).
@@ -97,30 +122,39 @@ Proof. destruct H; [apply ndI | apply ndU | apply ndC | apply ndD | apply ndE | 
   -apply (translation_imp _ nd cnd). { intros. reflexivity. } apply translation_fwd. assumption.
   -apply (translation_univ _ nd cnd). { intros. reflexivity. } apply translation_subst. apply translation_fwd. assumption.
   -apply (translation_conj _ nd cnd). { intros. reflexivity. } apply translation_fwd. assumption.
-  -apply (translation_disj _ nd cnd _ retract_form_implicative_form). { intros. reflexivity. }
-   apply embed. admit. apply weakening. admit. apply translation_fwd. assumption.
+  -apply (translation_disj _ nd cnd _ retract_form_implicative_form). { intros. reflexivity. } apply embed.
+    apply weakening. apply dni. apply cndD. apply ndD. apply cndDN. apply ndI. apply translation_fwd. assumption.
   -apply (translation_exst _ nd cnd _ retract_form_implicative_form). { intros. reflexivity. }
-   apply translation_subst. apply embed. admit. apply weakening. apply translation_fwd. assumption.
-  -admit.
+   apply translation_subst. apply embed. apply weakening. apply dni. apply cndE. apply ndE. apply cndDN.
+   apply ndI. apply subst_helper. apply translation_fwd. assumption.
+  -destruct H. apply translation_helper. rewrite <- translation_dn. now apply translation_fwd.
 Admitted.
 
-Fixpoint translation_bwd A (p : form) : «/A» ⊢c «p» -> A ⊢c p.
-Proof. destruct p; cbn; intro.
-  -apply dne in H. apply translation_bwd. cbn. now apply dni_c.
-  -apply (translation_bwd_imp _ retract_form_implicative_form _ translate). {intro. reflexivity. } apply translation_bwd. assumption.
-  -apply (translation_bwd_univ _ retract_form_universal_form _ translate). {intro. reflexivity. } apply translation_bwd. assumption.
-  -apply (translation_bwd_conj _ retract_form_conjunctive_form _ cndC translate). {intro. reflexivity. } apply translation_bwd. assumption.
-  -apply (translation_bwd_disj _ retract_form_disjunctive_form _ weakening_c retract_form_implicative_form translate).
-    apply cndD. apply dne. apply dni_c. { intros. reflexivity. } apply translation_bwd. assumption.
-  -apply (translation_bwd_exst _ retract_form_existential_form subst_form _ weakening_c retract_form_implicative_form translate).
-    apply cndE. apply dne. apply dni_c. { intros. reflexivity. } apply translation_bwd. assumption.
-(* Defined.
- *)Admitted.
+
+Fixpoint translation_bwd A (p : form) : A ⊢c «p» <-> A ⊢c p.
+Proof. destruct p; cbn.
+  -split.  now apply dne. now apply dni_c.
+  -eapply translation_bwd_imp. apply cndI. apply cut_c. apply translation_bwd.
+  -eapply (translation_bwd_univ _ retract_form_universal_form subst_form ). {intros. reflexivity. }
+   apply cndU. apply cut_c. apply subst_helper. apply cndI. apply translation_bwd.
+  -eapply (translation_bwd_conj). apply cndC. apply translation_bwd.
+  -eapply (translation_bwd_disj). apply weakening_c. apply cndD. apply cndDN. apply cndI. apply translation_bwd.
+  -eapply (translation_bwd_exst _ retract_form_existential_form subst_form).
+    apply weakening_c. apply cndE. apply cndDN. apply cndI. {intros. reflexivity. } apply subst_helper. apply translation_bwd.
+Defined.
+
+Lemma translation_rm_ctx A B p : (A ++ «/B») ⊢c p -> (A ++ B) ⊢c p.
+Proof. revert A. induction B; cbn; [auto |].
+  intros. specialize (IHB (A ++ (cons a nil))). do 2 rewrite <- app_assoc in IHB. apply IHB. apply cut_c with («a»).
+    -apply translation_bwd. apply cndI,ndHyp,in_or_app. right. now left.
+    -apply (weakening_c _ _ _ H). unfold incl. intros. destruct (in_app_or _ _ _ H0). right. apply in_or_app. now left.
+     destruct H1. now left. right. apply in_or_app. right. apply in_or_app. now right.
+Defined.
 
 Theorem translation A p: A ⊢c p <-> «/A» ⊢ «p».
 Proof. split.
   -apply translation_fwd.
-  -intro. now apply translation_bwd, embed.
+  -intro. apply translation_rm_ctx with (A := nil). now apply translation_bwd, embed.
 Qed.
 
 End translation.
