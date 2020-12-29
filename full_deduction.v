@@ -122,14 +122,13 @@ Proof. destruct H; [apply ndI | apply ndU | apply ndC | apply ndD | apply ndE | 
   -apply (translation_imp _ nd cnd). { intros. reflexivity. } apply translation_fwd. assumption.
   -apply (translation_univ _ nd cnd). { intros. reflexivity. } apply translation_subst. apply translation_fwd. assumption.
   -apply (translation_conj _ nd cnd). { intros. reflexivity. } apply translation_fwd. assumption.
-  -apply (translation_disj _ nd cnd _ retract_form_implicative_form). { intros. reflexivity. } apply embed.
-    apply weakening. apply dni. apply cndD. apply ndD. apply cndDN. apply ndI. apply translation_fwd. assumption.
+  -apply (translation_disj _ nd cnd _ retract_form_implicative_form). { intros. reflexivity. }
+   apply weakening. apply dni. apply ndD. apply ndI. apply translation_helper. apply translation_fwd. assumption.
   -apply (translation_exst _ nd cnd _ retract_form_implicative_form). { intros. reflexivity. }
-   apply translation_subst. apply embed. apply weakening. apply dni. apply cndE. apply ndE. apply cndDN.
-   apply ndI. apply subst_helper. apply translation_fwd. assumption.
+   apply translation_subst. apply weakening. apply ndE. apply ndI. apply translation_helper. 
+   apply translation_fwd. assumption.
   -destruct H. apply translation_helper. rewrite <- translation_dn. now apply translation_fwd.
-Admitted.
-
+Defined.
 
 Fixpoint translation_bwd A (p : form) : A ⊢c «p» <-> A ⊢c p.
 Proof. destruct p; cbn.

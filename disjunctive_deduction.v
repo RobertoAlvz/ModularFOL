@@ -20,11 +20,12 @@ Section Disjunctive.
     | ndDI1 p q : A ⊢ p -> A ⊢_disj p ∨ q
     | ndDI2 p q : A ⊢ q -> A ⊢_disj p ∨ q
     | ndDE p q r: A ⊢ p ∨ q -> p::A ⊢ r -> q::A ⊢ r -> A ⊢_disj r
+    | ndDinj p : A ⊢ p -> A ⊢_disj p
   where "A ⊢_disj p" := (nd_disj A p).
 
   Variable weakening : forall A B p, A ⊢ p -> incl A B -> B ⊢ p.
   Lemma weakening_disj A B p : A ⊢_disj p -> incl A B -> B ⊢_disj p.
-  Proof. destruct 1; intro Hinc; [ now apply ndDI1, (weakening A) | now apply ndDI2, (weakening A) | ].
+  Proof. destruct 1; intro Hinc; [ now apply ndDI1, (weakening A) | now apply ndDI2, (weakening A) | |now apply ndDinj, (weakening A)].
     -apply (ndDE _ p q). now apply (weakening A).
       +apply (weakening (p::A)), incl_cons; [assumption | now left | now apply incl_tl ].
       +apply (weakening (q::A)), incl_cons; [assumption | now left | now apply incl_tl ].
@@ -93,7 +94,7 @@ Section translation.
 
   Variable embed : forall A p, nd A p -> cnd A p.
   Lemma embed_disj A p : A ⊢[nd] p -> A ⊢[cnd] p.
-  Proof. destruct 1; [ apply ndDI1 | apply ndDI2 | apply (ndDE _ _ _ _ p q) ]; now apply embed.
+  Proof. destruct 1; [ apply ndDI1 | apply ndDI2 | apply (ndDE _ _ _ _ p q) | apply ndDinj ]; now apply embed.
   Defined.
 
 (*   Variable imp_nd : forall A p, nd_imp form _ (nd_disj _ _ nd) A p -> A ⊢[nd] p.*)
@@ -111,6 +112,7 @@ Section translation.
   Variable agree_nd : forall A p, A ⊢[nd] p -> nd A p. 
   Variable agree_cls : forall A p, nd_classic _ _ cnd A p -> cnd A p.
   Variable agree_imp : forall A p, nd_imp _ _ nd A p -> nd A p.
+  Variable translation_helper : forall A p, nd A (¬¬«p») -> nd A «p».
 
   Variable translation : forall A p, cnd A p -> nd «/A» «p».
   Lemma translation_disj A p: A ⊢[cnd] p -> «/A» ⊢[nd] «p».
@@ -121,8 +123,13 @@ Section translation.
     -apply (ndDE _ _ _ _ «p» «q»); [ now apply agree_nd,ndDI2,translation | |];
       rewrite translation_inj; cbn; apply dni,agree_nd; [ apply ndDI1 | apply ndDI2 ];
       apply agree_imp,ndHyp; now left.
-    - apply (ndDE _ _ _ _ «p» «q»). 2,3: rewrite <- map_cons; now apply translation.
-  Admitted.
-(*   Defined.
- *)
+    -apply ndDinj,translation_helper,agree_imp,ndII,agree_imp,(ndIE _ _ _  _ (¬(«p»∨«q»))).
+     pose (translation_inj (Disj _ p q)). cbn in e. rewrite <- e.
+     apply (weakening «/A»); [ now apply translation | now apply incl_tl].
+     apply agree_imp,ndII,agree_imp,(ndIE _ _ _ _ «r»). apply agree_imp,ndHyp. right. now left.
+     apply agree_nd,(ndDE _ _ _ _ «p» «q»). apply agree_imp,ndHyp. now left.
+     apply (weakening «/p::A»). now apply translation. {unfold incl. destruct 1. now left. now do 3 right. }
+     apply (weakening «/q::A»). now apply translation. {unfold incl. destruct 1. now left. now do 3 right. }
+    -now apply ndDinj,translation.
+  Defined.
 End translation.
