@@ -118,7 +118,6 @@ Section translation.
   Variable agree_nd : forall A p, A ⊢[nd] p -> nd A p. 
   Variable agree_cls : forall A p, nd_classic _ _ cnd A p -> cnd A p.
   Variable agree_imp : forall A p, nd_imp _ _ nd A p -> nd A p.
- Variable aux : forall p, subst_form (scons (var_term 0) (var_term)) (subst_form (up_term_term (S >> var_term)) p) = p.
   Variable translation_helper : forall A p, nd A (¬¬«p») -> nd A «p».
 
   Variable translation : forall A p, cnd A p -> nd «/A» «p».

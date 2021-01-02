@@ -67,9 +67,10 @@ Proof.
   intros. apply cndI,(ndIE _ _ _ _ p). now apply cndI,ndII. now apply (weakening_c A).
 Qed.
 
+
 Lemma subst_helper p: subst_form (var_term 0, var_term) (subst_form (up_term_term (S >> var_term)) p) = p.
-Proof. fsimpl. Admitted.
-(*  destruct p; destruct f; cbn; unfold up_term_term. *)
+Proof. rewrite compComp_form. apply idSubst_form. destruct x; now reflexivity.
+Defined.
 
 Fixpoint translation_helper A p : A ⊢ (¬¬«p») -> A ⊢ «p».
 Proof. destruct p; cbn; intros.

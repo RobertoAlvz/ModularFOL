@@ -32,7 +32,7 @@ Definition subst_form_universal   (sigmaterm : ( fin ) -> term ) (s : form_unive
     end.
 
 Variable retract_subst_form : forall   (sigmaterm : ( fin ) -> term ) s, subst_form sigmaterm (inj s) = subst_form_universal sigmaterm s.
-(* 
+
 Definition idSubst_form_universal  (sigmaterm : ( fin ) -> term ) (Eqterm : forall x, sigmaterm x = (var_term ) x) (s : form_universal ) : subst_form_universal sigmaterm s = inj s :=
     match s return subst_form_universal sigmaterm s = inj s with
     | All  s0 => congr_All_ ((idSubst_form (up_term_term sigmaterm) (upId_term_term (_) Eqterm)) s0)
@@ -42,7 +42,8 @@ Definition ext_form_universal   (sigmaterm : ( fin ) -> term ) (tauterm : ( fin 
     match s return subst_form_universal sigmaterm s = subst_form_universal tauterm s with
     | All  s0 => congr_All_ ((ext_form (up_term_term sigmaterm) (up_term_term tauterm) (upExt_term_term (_) (_) Eqterm)) s0)
     end.
-Definition compSubstSubst_form_universal    (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) (thetaterm : ( fin ) -> term ) (Eqterm : forall x, ((funcomp) (subst_term tauterm) sigmaterm) x = thetaterm x) (s : form_universal ) : subst_form tauterm (subst_form_universal sigmaterm s) = subst_form_universal thetaterm s :=
+
+Definition compSubstSubst_form_universal (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) (thetaterm : ( fin ) -> term ) (Eqterm : forall x, ((funcomp) (subst_term tauterm) sigmaterm) x = thetaterm x) (s : form_universal ) : subst_form tauterm (subst_form_universal sigmaterm s) = subst_form_universal thetaterm s :=
     match s return subst_form tauterm (subst_form_universal sigmaterm s) = subst_form_universal thetaterm s with
     | All  s0 => (eq_trans) (retract_subst_form (_) (All (_))) (congr_All_ ((compSubstSubst_form (up_term_term sigmaterm) (up_term_term tauterm) (up_term_term thetaterm) (up_subst_subst_term_term (_) (_) (_) Eqterm)) s0))
     end.
@@ -60,7 +61,7 @@ Definition isIn_form_form_universal (s : form) (t : form_universal) : Prop :=
   match t with
   | All t0  => s = t0
   end.
-*)
+
 
 End form_universal.
 

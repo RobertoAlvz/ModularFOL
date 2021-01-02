@@ -49,7 +49,7 @@ Section universals.
 
   Variable agree : forall A p, nd_univ A p -> A ⊢ p.
   Variable  cut : forall A p q, A ⊢ p -> (p :: A) ⊢ q -> A ⊢ q.
-  Variable aux : forall p, subst_form (scons (var_term 0) (var_term)) (subst_form (up_term_term (S >> var_term)) p) = p.
+  Variable subst_helper : forall p, subst_form (scons (var_term 0) (var_term)) (subst_form (up_term_term (S >> var_term)) p) = p.
 
   Variable retract_imp : retract (form_implicative form) form.
   Variable subst_form_inj_imp : forall sigma p, subst_form sigma (inj p) = subst_form_implicative _ subst_form _ sigma p.
@@ -57,7 +57,7 @@ Section universals.
   Variable translation_bwd : forall A p,  A ⊢ «p» <-> A ⊢ p.
   Lemma translation_bwd_univ A p: A ⊢ translate_univ p <-> A ⊢ inj p.
   Proof. destruct p. cbn. split; intro; apply (cut _ _ _ H), agree,ndUI,translation_bwd; cbn;
-    rewrite subst_form_inj; cbn; rewrite <- aux;
+    rewrite subst_form_inj; cbn; rewrite <- subst_helper;
     apply agree,ndUE, agree_imp,ndHyp; now left.
   Defined.
 
@@ -71,7 +71,7 @@ Section universals.
     apply agree_imp,ndII,agree_imp,(ndIE _ _ _ _ (¬(subst_form (S >> var_term) (∀«f»)))).
     apply agree_imp,ndHyp. right. now left.
     apply agree_imp,ndII,agree_imp,(ndIE _ _ _ _ «f»). apply agree_imp,ndHyp. right. now left.
-    rewrite subst_form_inj. cbn. rewrite <- aux. apply agree,ndUE,agree_imp,ndHyp. now left.
+    rewrite subst_form_inj. cbn. rewrite <- subst_helper. apply agree,ndUE,agree_imp,ndHyp. now left.
   Defined.
 
 End universals.

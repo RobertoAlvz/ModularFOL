@@ -33,22 +33,23 @@ Definition subst_form_atomic   (sigmaterm : ( fin ) -> term ) (s : form_atomic )
     end.
 
 Variable retract_subst_form : forall   (sigmaterm : ( fin ) -> term ) s, subst_form sigmaterm (inj s) = subst_form_atomic sigmaterm s.
-(* 
+
 Definition idSubst_form_atomic  (sigmaterm : ( fin ) -> term ) (Eqterm : forall x, sigmaterm x = (var_term ) x) (s : form_atomic ) : subst_form_atomic sigmaterm s = inj s :=
     match s return subst_form_atomic sigmaterm s = inj s with
     | Pred  p s0 => congr_Pred_ ((vect_id (idSubst_term sigmaterm Eqterm)) s0)
     end.
 
+(* 
 Definition ext_form_atomic   (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) (Eqterm : forall x, sigmaterm x = tauterm x) (s : form_atomic ) : subst_form_atomic sigmaterm s = subst_form_atomic tauterm s :=
     match s return subst_form_atomic sigmaterm s = subst_form_atomic tauterm s with
     | Pred  p s0 => congr_Pred_ ((vect_ext (ext_term sigmaterm tauterm Eqterm)) s0)
     end.
-
+*)
 Definition compSubstSubst_form_atomic    (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) (thetaterm : ( fin ) -> term ) (Eqterm : forall x, ((funcomp) (subst_term tauterm) sigmaterm) x = thetaterm x) (s : form_atomic ) : subst_form tauterm (subst_form_atomic sigmaterm s) = subst_form_atomic thetaterm s :=
     match s return subst_form tauterm (subst_form_atomic sigmaterm s) = subst_form_atomic thetaterm s with
-    | Pred  p s0 => (eq_trans) (retract_subst_form (_) (Pred (_))) (congr_Pred_ ((vect_comp (compSubstSubst_term sigmaterm tauterm thetaterm Eqterm)) s0))
+    | Pred  p s0 => (eq_trans) (retract_subst_form (_) (Pred p (_))) (congr_Pred_ ((vect_comp (compSubstSubst_term sigmaterm tauterm thetaterm Eqterm)) s0))
     end.
-
+(*
 Lemma instId_form_atomic  : subst_form_atomic (var_term ) = inj .
 Proof. exact ((FunctionalExtensionality.functional_extensionality _ _ ) (fun x => idSubst_form_atomic (var_term ) (fun n => eq_refl) ((id) x))). Qed.
 

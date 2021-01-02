@@ -87,16 +87,17 @@ Fixpoint subst_form   (sigmaterm : ( fin ) -> term ) (s : form ) : form  :=
     | In_form_existential  s0 =>   subst_form_existential form subst_form _ sigmaterm s0
     end.
 
-(* Fixpoint idSubst_form  (sigmaterm : ( fin ) -> term ) (Eqterm : forall x, sigmaterm x = (var_term ) x) (s : form ) : subst_form sigmaterm s = s :=
-    match s return subst_form sigmaterm s = s with
-    | In_form_atomic  s0 =>  ((idSubst_form_atomic form sigmaterm Eqterm) s0)
-    | In_form_implicative  s0 =>  ((idSubst_form_implicative form sigmaterm Eqterm) s0)
-    | In_form_universal  s0 =>  ((idSubst_form_universal form up_term_form upId_term_form sigmaterm Eqterm) s0)
-    | In_form_conjunctive  s0 =>  ((idSubst_form_conjunctive form sigmaterm Eqterm) s0)
-    | In_form_disjunctive  s0 =>  ((idSubst_form_disjunctive form sigmaterm Eqterm) s0)
-    | In_form_existential  s0 =>  ((idSubst_form_existential form up_term_form upId_term_form sigmaterm Eqterm) s0)
-    end.
-
+Fixpoint idSubst_form  (sigmaterm : ( fin ) -> term ) (Eqterm : forall x, sigmaterm x = (var_term ) x) (s : form ) : subst_form sigmaterm s = s.
+Proof. destruct s; 
+  [ eapply idSubst_form_atomic
+  | eapply idSubst_form_implicative
+  | eapply idSubst_form_universal
+  | eapply idSubst_form_conjunctive
+  | eapply idSubst_form_disjunctive
+  | eapply idSubst_form_existential
+  ]; eauto.
+Defined.
+(*
 Fixpoint ext_form   (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) (Eqterm : forall x, sigmaterm x = tauterm x) (s : form ) : subst_form sigmaterm s = subst_form tauterm s :=
     match s return subst_form sigmaterm s = subst_form tauterm s with
     | In_form_atomic  s0 =>  ((ext_form_atomic form sigmaterm tauterm Eqterm) s0)
@@ -106,16 +107,17 @@ Fixpoint ext_form   (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) 
     | In_form_disjunctive  s0 =>  ((ext_form_disjunctive form sigmaterm tauterm Eqterm) s0)
     | In_form_existential  s0 =>  ((ext_form_existential form up_term_form upExt_term_form sigmaterm tauterm Eqterm) s0)
     end.
-
-Fixpoint compSubstSubst_form    (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) (thetaterm : ( fin ) -> term ) (Eqterm : forall x, ((funcomp) (subst_term tauterm) sigmaterm) x = thetaterm x) (s : form ) : subst_form tauterm (subst_form sigmaterm s) = subst_form thetaterm s :=
-    match s return subst_form tauterm (subst_form sigmaterm s) = subst_form thetaterm s with
-    | In_form_atomic  s0 =>  ((compSubstSubst_form_atomic form sigmaterm tauterm thetaterm Eqterm) s0)
-    | In_form_implicative  s0 =>  ((compSubstSubst_form_implicative form sigmaterm tauterm thetaterm Eqterm) s0)
-    | In_form_universal  s0 =>  ((compSubstSubst_form_universal form up_term_form up_subst_subst_term_form sigmaterm tauterm thetaterm Eqterm) s0)
-    | In_form_conjunctive  s0 =>  ((compSubstSubst_form_conjunctive form sigmaterm tauterm thetaterm Eqterm) s0)
-    | In_form_disjunctive  s0 =>  ((compSubstSubst_form_disjunctive form sigmaterm tauterm thetaterm Eqterm) s0)
-    | In_form_existential  s0 =>  ((compSubstSubst_form_existential form up_term_form up_subst_subst_term_form sigmaterm tauterm thetaterm Eqterm) s0)
-    end.
+*)
+Fixpoint compSubstSubst_form    (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) (thetaterm : ( fin ) -> term ) (Eqterm : forall x, ((funcomp) (subst_term tauterm) sigmaterm) x = thetaterm x) (s : form ) : subst_form tauterm (subst_form sigmaterm s) = subst_form thetaterm s.
+Proof. destruct s;
+  [ eapply compSubstSubst_form_atomic
+  | eapply compSubstSubst_form_implicative
+  | eapply compSubstSubst_form_universal
+  | eapply compSubstSubst_form_conjunctive
+  | eapply compSubstSubst_form_disjunctive
+  | eapply compSubstSubst_form_existential
+  ]; eauto.
+Defined.
 
 Lemma instId_form  : subst_form (var_term ) = id .
 Proof. exact ((FunctionalExtensionality.functional_extensionality _ _ ) (fun x => idSubst_form (var_term ) (fun n => eq_refl) ((id) x))). Qed.
@@ -157,7 +159,7 @@ Proof. exact ((FunctionalExtensionality.functional_extensionality _ _ ) (fun n =
 
 
 
-
+(*
 Global Instance Subst_term   : Subst1 (( fin ) -> term ) (term ) (term ) := @subst_term   .
 
 Global Instance Subst_form   : Subst1 (( fin ) -> term ) (form ) (form ) := @subst_form   .

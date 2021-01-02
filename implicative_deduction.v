@@ -83,6 +83,19 @@ Section implicative.
     -rewrite subst_form_inj. unfold Impl_. rewrite translation_inj. cbn. apply congr_Impl_; apply translation_subst.
   Defined.
 
+  Variable subst_comp: forall sigma tau p, subst_form sigma (subst_form tau p) = subst_form (sigma >> subst_term tau) p.
+  Lemma subst_comp_imp sigma tau p: subst_form sigma (subst_form tau (inj p)) = subst_form (sigma >> subst_term tau) (inj p).
+  Proof. rewrite subst_form_inj. destruct p; cbn; [unfold Fal_ | unfold Impl_]; repeat rewrite subst_form_inj; cbn.
+  -reflexivity.
+  -apply congr_Impl_; apply subst_comp.
+  Defined.
+
+  Variable subst_helper: forall p, subst_form (var_term 0, var_term) (subst_form (up_term_term (S >> var_term)) p) = p.
+  Lemma subst_helper_imp p : subst_form (var_term 0, var_term) (subst_form (up_term_term (S >> var_term)) (inj p)) = (inj p).
+  Proof. destruct p; cbn; rewrite subst_form_inj; cbn; [unfold Fal_ | unfold Impl_]; rewrite subst_form_inj; cbn;
+    [reflexivity | apply congr_Impl_; apply subst_helper ].
+  Defined.
+
 End implicative.
 
 Notation "A ⊢_imp p" := (nd_imp A p) (at level 70).

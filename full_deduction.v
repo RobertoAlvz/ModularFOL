@@ -77,7 +77,7 @@ Proof.
 Qed.
 
 Lemma subst_helper p: subst_form (var_term 0, var_term) (subst_form (up_term_term (S >> var_term)) p) = p.
-Proof. Admitted.
+Proof. rewrite compComp_form. apply idSubst_form. destruct x; now reflexivity. Defined.
 
 Fixpoint translation_helper A p : A ⊢ (¬¬«p») -> A ⊢ «p».
 Proof. destruct p.

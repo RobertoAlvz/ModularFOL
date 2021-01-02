@@ -1,4 +1,3 @@
-
 Require Export implicativesyntax universalsyntax termsyntax.
 
 Section form.
@@ -35,23 +34,26 @@ Fixpoint subst_form   (sigmaterm : ( fin ) -> term ) (s : form ) : form  :=
     | In_form_universal  s0 =>   subst_form_universal form subst_form _ sigmaterm s0
     end.
 
-(* Fixpoint idSubst_form  (sigmaterm : ( fin ) -> term ) (Eqterm : forall x, sigmaterm x = (var_term ) x) (s : form ) : subst_form sigmaterm s = s :=
-    match s return subst_form sigmaterm s = s with
-    | In_form_implicative  s0 =>  ((idSubst_form_implicative form sigmaterm Eqterm) s0)
-    | In_form_universal  s0 =>  ((idSubst_form_universal form up_term_form upId_term_form sigmaterm Eqterm) s0)
-    end.
+Fixpoint idSubst_form  (sigmaterm : ( fin ) -> term ) (Eqterm : forall x, sigmaterm x = (var_term ) x) (s : form ) : subst_form sigmaterm s = s.
+Proof. destruct s;
+  [ eapply idSubst_form_implicative
+  | eapply idSubst_form_universal
+  ]; eauto.
+Defined.
 
-Fixpoint ext_form   (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) (Eqterm : forall x, sigmaterm x = tauterm x) (s : form ) : subst_form sigmaterm s = subst_form tauterm s :=
-    match s return subst_form sigmaterm s = subst_form tauterm s with
-    | In_form_implicative  s0 =>  ((ext_form_implicative form sigmaterm tauterm Eqterm) s0)
-    | In_form_universal  s0 =>  ((ext_form_universal form up_term_form upExt_term_form sigmaterm tauterm Eqterm) s0)
-    end.
+Fixpoint ext_form   (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) (Eqterm : forall x, sigmaterm x = tauterm x) (s : form ) : subst_form sigmaterm s = subst_form tauterm s.
+Proof. destruct s;
+  [ eapply ext_form_implicative
+  | eapply ext_form_universal
+  ]; eauto.
+Defined.
 
-Fixpoint compSubstSubst_form    (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) (thetaterm : ( fin ) -> term ) (Eqterm : forall x, ((funcomp) (subst_term tauterm) sigmaterm) x = thetaterm x) (s : form ) : subst_form tauterm (subst_form sigmaterm s) = subst_form thetaterm s :=
-    match s return subst_form tauterm (subst_form sigmaterm s) = subst_form thetaterm s with
-    | In_form_implicative  s0 =>  ((compSubstSubst_form_implicative form sigmaterm tauterm thetaterm Eqterm) s0)
-    | In_form_universal  s0 =>  ((compSubstSubst_form_universal form up_term_form up_subst_subst_term_form sigmaterm tauterm thetaterm Eqterm) s0)
-    end.
+Fixpoint compSubstSubst_form    (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) (thetaterm : ( fin ) -> term ) (Eqterm : forall x, ((funcomp) (subst_term tauterm) sigmaterm) x = thetaterm x) (s : form ) : subst_form tauterm (subst_form sigmaterm s) = subst_form thetaterm s.
+Proof. destruct s;
+  [ eapply compSubstSubst_form_implicative
+  | eapply compSubstSubst_form_universal
+  ]; eauto.
+Defined.
 
 Lemma instId_form  : subst_form (var_term ) = id .
 Proof. exact ((FunctionalExtensionality.functional_extensionality _ _ ) (fun x => idSubst_form (var_term ) (fun n => eq_refl) ((id) x))). Qed.
@@ -94,7 +96,7 @@ Proof. exact ((FunctionalExtensionality.functional_extensionality _ _ ) (fun n =
 
 
 
-
+(*
 Global Instance Subst_term   : Subst1 (( fin ) -> term ) (term ) (term ) := @subst_term   .
 
 Global Instance Subst_form   : Subst1 (( fin ) -> term ) (form ) (form ) := @subst_form   .
@@ -135,7 +137,8 @@ Ltac auto_unfold := repeat unfold subst1,  subst2,  Subst1,  Subst2,  ids,  ren1
 
 Tactic Notation "auto_unfold" "in" "*" := repeat unfold subst1,  subst2,  Subst1,  Subst2,  ids,  ren1,  ren2,  Ren1,  Ren2,  Subst_term,  Subst_form,  VarInstance_term in *.
 
- *)
+*)
+
 (* Ltac asimpl' := repeat first [progress rewrite ?instId_term| progress rewrite ?compComp_term| progress rewrite ?compComp'_term| progress rewrite ?instId_form_universal| progress rewrite ?compComp_form_universal| progress rewrite ?compComp'_form_universal| progress rewrite ?instId_form_implicative| progress rewrite ?compComp_form_implicative| progress rewrite ?compComp'_form_implicative| progress rewrite ?instId_form_existential| progress rewrite ?compComp_form_existential| progress rewrite ?compComp'_form_existential| progress rewrite ?instId_form_disjunctive| progress rewrite ?compComp_form_disjunctive| progress rewrite ?compComp'_form_disjunctive| progress rewrite ?instId_form_conjunctive| progress rewrite ?compComp_form_conjunctive| progress rewrite ?compComp'_form_conjunctive| progress rewrite ?instId_form_atomic| progress rewrite ?compComp_form_atomic| progress rewrite ?compComp'_form_atomic| progress rewrite ?instId_form| progress rewrite ?compComp_form| progress rewrite ?compComp'_form| progress rewrite ?varL_term| progress (unfold up_ren, up_term_term)| progress (cbn [subst_term subst_form_universal subst_form_implicative subst_form_existential subst_form_disjunctive subst_form_conjunctive subst_form_atomic subst_form])| fsimpl].
 
 Ltac asimpl := repeat try unfold_funcomp; auto_unfold in *; asimpl'; repeat try unfold_funcomp.
