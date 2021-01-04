@@ -15,7 +15,7 @@ Proof. congruence. Defined.
 Fixpoint subst_term   (sigmaterm : ( fin ) -> term ) (s : term ) : term  :=
     match s return term  with
     | var_term  s => sigmaterm s
-    | Func  f s0 => Func  f ((vect_map (subst_term sigmaterm)) s0)
+    | Func  f s0 => Func  f (vect_map (subst_term sigmaterm) s0)
     end.
 
 Definition up_term_term   (sigma : ( fin ) -> term ) : ( fin ) -> term  :=
@@ -27,12 +27,11 @@ Definition upId_term_term  (sigma : ( fin ) -> term ) (Eq : forall x, sigma x = 
   | 0  => eq_refl
   end.
 
-Fixpoint idSubst_term  (sigmaterm : ( fin ) -> term ) (Eqterm : forall x, sigmaterm x = (var_term ) x) (s : term ) : subst_term sigmaterm s = s.
-Proof. destruct s.
-  -exact (Eqterm n).
-  -exact (congr_Func (vect_id (idSubst_term _ Eqterm) v)).
-Admitted.
-
+Fixpoint idSubst_term  (sigmaterm : ( fin ) -> term ) (Eqterm : forall x, sigmaterm x = (var_term ) x) (s : term ) : subst_term sigmaterm s = s :=
+    match s return subst_term sigmaterm s = s with
+    | var_term  s => Eqterm s
+    | Func  f s0 => congr_Func ((vect_id (idSubst_term sigmaterm Eqterm)) s0)
+    end.
 
 Definition upExt_term_term   (sigma : ( fin ) -> term ) (tau : ( fin ) -> term ) (Eq : forall x, sigma x = tau x) : forall x, (up_term_term sigma) x = (up_term_term tau) x :=
   fun n => match n with
@@ -47,12 +46,11 @@ Fixpoint ext_term   (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) 
     end.
 *)
 
-Fixpoint compSubstSubst_term    (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) (thetaterm : ( fin ) -> term ) (Eqterm : forall x, ((funcomp) (subst_term tauterm) sigmaterm) x = thetaterm x) (s : term ) : subst_term tauterm (subst_term sigmaterm s) = subst_term thetaterm s.
-Proof. destruct s.
-  -exact (Eqterm n).
-  -exact (congr_Func (vect_comp (compSubstSubst_term _ _ _ Eqterm) v)).
-Admitted.
-
+Fixpoint compSubstSubst_term    (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) (thetaterm : ( fin ) -> term ) (Eqterm : forall x, ((funcomp) (subst_term tauterm) sigmaterm) x = thetaterm x) (s : term ) : subst_term tauterm (subst_term sigmaterm s) = subst_term thetaterm s :=
+    match s return subst_term tauterm (subst_term sigmaterm s) = subst_term thetaterm s with
+    | var_term  s => Eqterm s
+    | Func  f s0 => congr_Func ((vect_comp (compSubstSubst_term sigmaterm tauterm thetaterm Eqterm)) s0)
+    end.
 
 Definition up_subst_subst_term_term    (sigma : ( fin ) -> term ) (tauterm : ( fin ) -> term ) (theta : ( fin ) -> term ) (Eq : forall x, ((funcomp) (subst_term tauterm) sigma) x = theta x) :   forall x, ((funcomp) (subst_term (up_term_term tauterm)) (up_term_term sigma)) x = (up_term_term theta) x :=
   fun n => match n with
