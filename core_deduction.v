@@ -10,9 +10,9 @@ Inductive nd : list form -> form -> Prop :=
 where "A ⊢ p" := (nd A p).
 
 Fixpoint weakening A B p (H : A ⊢ p) : incl A B -> B ⊢ p.
-Proof. destruct H; intro Hinc; [apply ndI | apply ndU ].
-  -now apply (weakening_imp form _ nd weakening A B).
-  -now apply (weakening_univ form _ subst_form nd weakening A B).
+Proof. destruct H; intro Hinc.
+  -now apply (weakening_imp form _ nd ndI weakening A B).
+  -now apply (weakening_univ form _ subst_form nd ndU weakening A B).
 Defined.
 
 Reserved Notation "A ⊢c p" (at level 70).
@@ -33,9 +33,9 @@ Defined.
 
 Fixpoint weakening_c A B p (H : A ⊢c p) : incl A B -> B ⊢c p.
 Proof. destruct  H; intro Hinc;
-  [ now apply cndI, (weakening_imp form _ cnd weakening_c A)
-  | now apply cndU, (weakening_univ form _ subst_form cnd weakening_c A)
-  | now apply cndDN, (weakening_classic form _ cnd weakening_c A) ].
+  [ now apply (weakening_imp form _ cnd cndI weakening_c A)
+  | now apply (weakening_univ form _ subst_form cnd cndU weakening_c A)
+  | now apply (weakening_classic form _ cnd cndDN weakening_c A) ].
 Defined.
 
 Fixpoint translate (p : form) : form := match p with
@@ -46,15 +46,13 @@ Notation "« p »" := (translate p).
 Notation "«/ A »" := (map translate A).
 
 Fixpoint embed A p (H : A ⊢ p) : A ⊢c p.
-Proof. destruct H; [ apply cndI | apply cndU ].
-  -now apply (embed_imp _ nd cnd _ embed).
-  -now apply (embed_univ _  nd cnd _ _ embed).
+Proof. destruct H.
+  -now apply (embed_imp _ nd cnd _ cndI embed).
+  -now apply (embed_univ _  nd cnd _ _ cndU embed).
 Defined.
 
 Fixpoint translation_subst sigma p : « subst_form sigma p » = subst_form sigma « p ».
-Proof. destruct p.
-  -apply translation_subst_imp. { intro. reflexivity. } { intros. reflexivity. } apply translation_subst.
-  -apply translation_subst_univ. { intro. reflexivity. } { intros. reflexivity. } apply translation_subst.
+Proof. destruct p; [eapply translation_subst_imp | apply translation_subst_univ ]; eauto.
 Defined.
 
 Lemma cut A p q : A ⊢ p -> (p :: A) ⊢ q -> A ⊢ q.
@@ -74,27 +72,26 @@ Defined.
 
 Fixpoint translation_helper A p : A ⊢ (¬¬«p») -> A ⊢ «p».
 Proof. destruct p; cbn; intros.
-  -apply (translation_helper_imp _ _ _ weakening _ ndI). {intros. now apply translation_helper. } assumption.
-  -eapply (translation_helper_univ _ _ subst_form). {intros. reflexivity. } apply ndU. apply cut. apply subst_helper.
-   {intros. reflexivity. } apply ndI. intros. now apply translation_helper. assumption.
+  -eapply (translation_helper_imp _ _ _ ndI weakening); eauto.
+  -eapply (translation_helper_univ _ _ subst_form _ ndU); eauto. exact cut. exact subst_helper.
+   exact ndI.
 Defined.
 
 Lemma translation_dn p : «¬¬p» = ¬¬«p».
 Proof. now reflexivity. Defined.
 
 Fixpoint translation_fwd A p (H : A ⊢c p) : «/A» ⊢ «p».
-Proof. destruct H; [apply ndI | apply ndU | ].
-  -apply (translation_imp _  nd cnd). {intro. reflexivity. } apply translation_fwd. assumption.
-  -apply (translation_univ _ nd cnd). {intro. reflexivity. } apply translation_subst. apply translation_fwd. assumption.
+Proof. destruct H.
+  -eapply (translation_imp _  nd cnd retract_form_implicative_form); eauto. exact ndI.
+  -eapply (translation_univ _ nd cnd); eauto. exact translation_subst. exact ndU.
   -destruct H. apply translation_helper. rewrite <- translation_dn. now apply translation_fwd.
 Defined.
 
 Fixpoint translation_bwd A (p : form) : A ⊢c «p» <-> A ⊢c p.
 Proof. destruct p; cbn.
-  -apply (translation_bwd_imp  _ retract_form_implicative_form _ translate).
-   apply cndI. apply cut_c. apply translation_bwd.
-  -eapply (translation_bwd_univ _ retract_form_universal_form subst_form ). {intros. reflexivity. }
-   apply cndU. apply cut_c. apply subst_helper. apply cndI. apply translation_bwd.
+  -eapply translation_bwd_imp; eauto. exact cndI. exact cut_c.
+  -eapply translation_bwd_univ; eauto. exact cndU. {intros. reflexivity. } exact cut_c.
+   exact subst_helper. exact cndI.
 Defined.
 
 Lemma translation_rm_ctx A B p : (A ++ «/B») ⊢c p -> (A ++ B) ⊢c p.

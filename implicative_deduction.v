@@ -26,10 +26,11 @@ Section implicative.
     | ndII p q : (p :: A) ⊢ q -> A ⊢_imp p ~> q
     | ndIE p q : A ⊢ p ~> q -> A ⊢ p -> A ⊢_imp q
   where "A ⊢_imp p" := (nd_imp A p).
+  Variable agree : forall A p, nd_imp A p -> A ⊢ p.
 
   Variable weakening : forall A B p, A ⊢ p -> incl A B -> B ⊢ p.
-  Lemma weakening_imp A B p : A ⊢_imp p -> incl A B -> B ⊢_imp p.
-  Proof. intro. revert B. destruct H; intros B Hinc;
+  Lemma weakening_imp A B p : A ⊢_imp p -> incl A B -> B ⊢ p.
+  Proof. intro. revert B. destruct H; intros B Hinc; apply agree;
     [ now apply ndHyp, (Hinc p)
     | now apply ndExp, (weakening A) 
     | apply ndII 
@@ -47,7 +48,6 @@ Section implicative.
   end.
 
   Variable translation_inj : forall p, «inj p» = translate_imp  p.
-  Variable agree : forall A p, nd_imp A p -> A ⊢ p.
 
   Variable cut : forall A p q,  A ⊢ p -> (p :: A) ⊢ q -> A ⊢ q.
   Variable translation_bwd : forall A p,  A ⊢ «p» <-> A ⊢ p.
@@ -114,17 +114,20 @@ Section translation.
   Notation "« p »" := (translate p).
   Notation "«/ A »" := (map translate A).
 
-
+  Variable agree_cnd : forall A p, A ⊢[cnd] p -> cnd A p.
   Variable embed : forall A p, nd A p -> cnd A p.
-  Lemma embed_imp A p : A ⊢[nd] p -> A ⊢[cnd] p.
-  Proof. destruct 1; [ now apply ndHyp | now apply ndExp, embed | now apply ndII, embed | ]. apply (ndIE _ _ _ _ p); now apply embed.
+  Lemma embed_imp A p : A ⊢[nd] p -> cnd A p.
+  Proof. destruct 1; apply agree_cnd;
+    [ now apply ndHyp | now apply ndExp, embed | now apply ndII, embed | ].
+    apply (ndIE _ _ _ _ p); now apply embed.
   Defined.
 
   Variable translation_inj : forall p, «inj p» = translate_imp _ _ translate p.
 
+  Variable agree_nd : forall A p, A ⊢[nd] p -> nd A p.
   Variable translation : forall A p, cnd A p -> nd «/A» «p».
-  Lemma translation_imp A p: A ⊢[cnd] p -> «/A» ⊢[nd] «p».
-  Proof. destruct 1.
+  Lemma translation_imp A p: A ⊢[cnd] p -> nd «/A» «p».
+  Proof. destruct 1; apply agree_nd.
     -now apply ndHyp, in_map.
     -apply ndExp. apply translation in H. rewrite translation_inj in H. now cbn in H.
     -rewrite translation_inj. cbn. apply ndII. rewrite <- map_cons. now apply translation.

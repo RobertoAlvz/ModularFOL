@@ -17,33 +17,13 @@ Section classical.
     | ndDN p : A ⊢ (¬¬p) -> A ⊢_c p
   where "A ⊢_c p" := (nd_classic A p).
 
-(* Variable agree : forall A p, A ⊢I p -> A ⊢ p. *)
+  Variable agree : forall A p, A ⊢_c p -> A ⊢ p.
 
   Variable weakening : forall A B p, A ⊢ p -> incl A B -> B ⊢ p.
-  Lemma weakening_classic A B p: A ⊢_c p -> incl A B -> B ⊢_c p.
-  Proof. destruct 1. intro. now apply ndDN, (weakening A).
+  Lemma weakening_classic A B p: A ⊢_c p -> incl A B -> B ⊢ p.
+  Proof. destruct 1. intro. now apply agree,ndDN, (weakening A).
   Defined.
 
 End classical.
 
 Notation "A ⊢_c p" := (nd_classic A p) (at level 70).
-
-Section translation.
-
-  Variable form : Type.
-  Variable nd : list form -> form -> Prop.
-  Variable cnd : list form -> form -> Prop.
-  Variable retract_implicative : included form_implicative form.
-
-  Notation "A ⊢[ nd ] p" := (@nd_classic form _ nd A p) (at level 70).
-  Variable translate : form -> form.
-  Notation "« p »" := (translate p).
-  Notation "«/ A »" := (map translate A).
-  Variable dne : forall A p, cnd A (¬¬p) -> cnd A p.
-
-  Variable embed : forall A p, nd A p -> cnd A p.
-  Lemma embed_class A p : A ⊢[nd] p -> A ⊢[cnd] p.
-  Proof. destruct 1. now apply ndDN, embed.
-  Defined.
-
-End translation.

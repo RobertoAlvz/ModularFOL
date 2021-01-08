@@ -26,10 +26,11 @@ Section universals.
     | ndUI p : up_ctx A ⊢ p -> A ⊢_univ ∀ p
     | ndUE p t : A ⊢ ∀ p -> A ⊢_univ subst_form (scons t (var_term)) p
   where "A ⊢_univ p" := (nd_univ A p).
+  Variable agree : forall A p, nd_univ A p -> A ⊢ p.
 
   Variable weakening : forall A B p, A ⊢ p -> incl A B -> B ⊢ p.
-  Lemma weakening_univ A B p : A ⊢_univ p -> incl A B -> B ⊢_univ p.
-  Proof. intro. revert B. destruct H; intros B Hinc; [ apply ndUI | now apply ndUE, (weakening A) ].
+  Lemma weakening_univ A B p : A ⊢_univ p -> incl A B -> B ⊢ p.
+  Proof. intro. revert B. destruct H; intros B Hinc; apply agree; [ apply ndUI | now apply ndUE, (weakening A) ].
     -apply (weakening (up_ctx A) (up_ctx B)); [ assumption | unfold up_ctx ]. now apply incl_map.
   Defined.
 
@@ -47,7 +48,6 @@ Section universals.
   Proof. destruct p. cbn. rewrite subst_form_inj. unfold All_. rewrite translation_inj. cbn. apply congr_All_, translation_subst.
   Defined.
 
-  Variable agree : forall A p, nd_univ A p -> A ⊢ p.
   Variable  cut : forall A p q, A ⊢ p -> (p :: A) ⊢ q -> A ⊢ q.
   Variable subst_helper : forall p, subst_form (scons (var_term 0) (var_term)) (subst_form (up_term_term (S >> var_term)) p) = p.
 
@@ -100,16 +100,18 @@ Section translation.
   Defined. *)
 
 
+  Variable agree_nd : forall A p, A ⊢[nd] p -> nd A p.
   Variable translation : forall A p, cnd A p -> nd «/A» «p».
-  Lemma translation_univ A p: A ⊢[cnd] p -> «/A» ⊢[nd] «p».
-  Proof. destruct 1.
+  Lemma translation_univ A p: A ⊢[cnd] p -> nd «/A» «p».
+  Proof. destruct 1; apply agree_nd.
     -rewrite translation_inj. cbn. apply ndUI. rewrite translation_map. now apply translation. now apply translation_subst.
     -rewrite translation_subst. apply ndUE. { pose (translation_inj (All _ p)). cbn in e. rewrite <- e. now apply translation. }
   Defined.
 
+  Variable agree_cnd : forall A p, A ⊢[cnd] p -> cnd A p.
   Variable embed : forall A p, nd A p -> cnd A p.
-  Lemma embed_univ A p : A ⊢[nd] p -> A ⊢[cnd] p.
-  Proof. destruct 1; [ now apply ndUI, embed | now apply ndUE, embed ].
+  Lemma embed_univ A p : A ⊢[nd] p -> cnd A p.
+  Proof. destruct 1; apply agree_cnd; [ now apply ndUI, embed | now apply ndUE, embed ].
   Defined.
 
 End translation.

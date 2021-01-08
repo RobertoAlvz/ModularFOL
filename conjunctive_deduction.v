@@ -25,8 +25,8 @@ Section Conjunctive.
   Variable agree : forall A p, A ⊢_conj p -> A ⊢ p.
 
   Variable weakening : forall A B p, A ⊢ p -> incl A B -> B ⊢ p.
-  Lemma weakening_conj A B p : A ⊢_conj p -> incl A B -> B ⊢_conj p.
-  Proof. destruct 1; intro Hinc.
+  Lemma weakening_conj A B p : A ⊢_conj p -> incl A B -> B ⊢ p.
+  Proof. destruct 1; intro Hinc; apply agree.
     -apply ndCI. all: now apply (weakening A).
     -now apply (ndCE1 _ _ q), (weakening A).
     -now apply (ndCE2 _ p q), (weakening A).
@@ -91,18 +91,19 @@ Section translation.
 
   Variable translation_inj : forall p, «inj p» = translate_conj _ _ translate p.
 
-
+  Variable agree_cnd : forall A p, A ⊢[cnd] p -> cnd A p.
   Variable embed : forall A p, nd A p -> cnd A p.
-  Lemma embed_conj A p : A ⊢[nd] p -> A ⊢[cnd] p.
-  Proof. destruct 1.
+  Lemma embed_conj A p : A ⊢[nd] p -> cnd A p.
+  Proof. destruct 1; apply agree_cnd.
     -apply ndCI; now apply embed.
     -now apply (ndCE1 _ _ _ _  _ q), embed.
     -now apply (ndCE2 _ _ _ _ p), embed.
   Defined.
 
+  Variable agree_nd : forall A p, A ⊢[nd] p -> nd A p.
   Variable translation : forall A p, cnd A p -> nd «/A» «p».
-  Lemma translation_conj A p: A ⊢[cnd] p -> «/A» ⊢[nd] «p».
-  Proof. destruct 1.
+  Lemma translation_conj A p: A ⊢[cnd] p -> nd «/A» «p».
+  Proof. destruct 1; apply agree_nd.
     -rewrite translation_inj. cbn. apply ndCI; now apply translation.
     -apply (ndCE1 _ _ _ _ _ «q»). { pose (translation_inj (Conj _ p q)). cbn in e. rewrite <- e. now apply translation. }
     -apply (ndCE2 _ _ _ _ «p»). { pose (translation_inj (Conj _ p q)). cbn in e. rewrite <- e. now apply translation. }

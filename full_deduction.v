@@ -14,13 +14,13 @@ Inductive nd : list form -> form -> Prop :=
 where "A ⊢ p" := (nd A p).
 
 Fixpoint weakening A B p (H : A ⊢ p) : incl A B -> B ⊢ p.
-Proof. destruct H; intro Hinc; [apply ndI | apply ndU| apply ndC | apply ndD | apply ndE ].
-  -now apply (weakening_imp form _ nd weakening A B).
-  -now apply (weakening_univ form _ subst_form nd weakening A B).
-  -now apply (weakening_conj form _ nd weakening A B).
-  -now apply (weakening_disj form _ nd weakening A B).
-  -now apply (weakening_exst form _ subst_form nd weakening A B).
-Defined. 
+Proof. destruct H; intro Hinc.
+  -now apply (weakening_imp form _ nd ndI weakening A B).
+  -now apply (weakening_univ form _ subst_form nd ndU weakening A B).
+  -now apply (weakening_conj form _ nd ndC weakening A B).
+  -now apply (weakening_disj form _ nd ndD weakening A B).
+  -now apply (weakening_exst form _ subst_form nd ndE weakening A B).
+Defined.
 
 
 Fixpoint translate (p : form) : form := match p with
@@ -47,23 +47,24 @@ where "A ⊢c p" := (cnd A p).
 
 
 Fixpoint weakening_c A B p (H : A ⊢c p) : incl A B -> B ⊢c p.
-Proof. destruct H; intro Hinc; [apply cndI | apply cndU| apply cndC | apply cndD | apply cndE | apply cndDN ].
-  -now apply (weakening_imp form _ cnd weakening_c A B).
-  -now apply (weakening_univ form _ subst_form cnd weakening_c A B).
-  -now apply (weakening_conj form _ cnd weakening_c A B).
-  -now apply (weakening_disj form _ cnd weakening_c A B).
-  -now apply (weakening_exst form _ subst_form cnd weakening_c A B).
-  -now apply (weakening_classic form _ cnd weakening_c A B).
+Proof. destruct H; intro Hinc.
+  -now apply (weakening_imp form _ cnd cndI weakening_c A B).
+  -now apply (weakening_univ form _ subst_form cnd cndU weakening_c A B).
+  -now apply (weakening_conj form _ cnd cndC weakening_c A B).
+  -now apply (weakening_disj form _ cnd cndD weakening_c A B).
+  -now apply (weakening_exst form _ subst_form cnd cndE weakening_c A B).
+  -now apply (weakening_classic form _ cnd cndDN weakening_c A B).
 Defined.
 
 Fixpoint translation_subst sigma p : « subst_form sigma p » = subst_form sigma « p ».
-Proof. destruct p.
-  -apply translation_subst_atm. { intro. reflexivity. } { intros. reflexivity. } {intros. reflexivity. }
-  -apply translation_subst_imp. { intro. reflexivity. } { intros. reflexivity. } apply translation_subst.
-  -apply translation_subst_univ. { intro. reflexivity. } { intros. reflexivity. } apply translation_subst.
-  -apply translation_subst_conj. { intro. reflexivity. } { intros. reflexivity. } apply translation_subst.
-  -apply translation_subst_disj. { intro. reflexivity. } { intros. reflexivity. } {intros. reflexivity. } apply translation_subst.
-  -apply translation_subst_exst. { intro. reflexivity. } { intros. reflexivity. } {intros. reflexivity. } apply translation_subst.
+Proof. destruct p;
+  [ eapply translation_subst_atm
+  | eapply translation_subst_imp
+  | eapply translation_subst_univ
+  | eapply translation_subst_conj
+  | eapply translation_subst_disj
+  | eapply translation_subst_exst
+  ]; eauto.
 Defined.
 
 Lemma cut A p q : A ⊢ p -> (p :: A) ⊢ q -> A ⊢ q.
@@ -81,13 +82,13 @@ Proof. rewrite compComp_form. apply idSubst_form. destruct x; now reflexivity. D
 
 Fixpoint translation_helper A p : A ⊢ (¬¬«p») -> A ⊢ «p».
 Proof. destruct p.
-  -eapply translation_helper_atm. apply cut. apply ndI.
-  -eapply translation_helper_imp. apply weakening. apply ndI. apply translation_helper.
-  -eapply (translation_helper_univ _ _ subst_form). { intros. reflexivity. }
-   apply ndU. apply cut. apply subst_helper. {intros. reflexivity. } apply ndI. fold translate. intros. now apply translation_helper.
-  -eapply translation_helper_conj. apply ndC. apply cut. apply ndI. apply translation_helper.
-  -eapply translation_helper_disj. apply ndI. apply cut.
-  -eapply translation_helper_exst. apply ndI. apply cut.
+  -eapply translation_helper_atm. exact cut. exact ndI.
+  -eapply translation_helper_imp. exact ndI. exact weakening. apply translation_helper.
+  -eapply (translation_helper_univ _ _ subst_form); eauto.
+   exact ndU. exact cut. exact subst_helper. exact ndI.
+  -eapply translation_helper_conj. exact ndC. apply cut. exact ndI. exact translation_helper.
+  -eapply translation_helper_disj. exact ndI. apply cut.
+  -eapply translation_helper_exst. exact ndI. apply cut.
 Defined.
 
 Lemma translation_dn p : «¬¬p» = ¬¬«p».
@@ -106,40 +107,40 @@ Proof. intro. apply cndI, ndII, cndI, (ndIE _ _ _ _ p).
 Defined.
 
 Fixpoint embed A p (H : A ⊢ p) : A ⊢c p.
-Proof. destruct H; [ apply cndI | apply cndU | apply cndC | apply cndD | apply cndE ].
-  -now apply (embed_imp _ nd cnd _ embed).
-  -now apply (embed_univ _  nd cnd _ _ embed).
-  -now apply (embed_conj _ nd cnd _ embed).
-  -now apply (embed_disj _ nd cnd _ embed).
-  -now apply (embed_exst _ nd cnd _ _ embed).
+Proof. destruct H.
+  -now apply (embed_imp _ nd cnd _ cndI embed).
+  -now apply (embed_univ _  nd cnd _ _ cndU embed).
+  -now apply (embed_conj _ nd cnd _ cndC embed).
+  -now apply (embed_disj _ nd cnd _ cndD embed).
+  -now apply (embed_exst _ nd cnd _ _ cndE embed).
 Defined.
 
 Lemma dne A p : A ⊢c (¬¬p) -> A ⊢c p.
 Proof. intro. now apply cndDN, ndDN. Defined.
 
 Fixpoint translation_fwd A p (H : A ⊢c p) : «/A» ⊢ «p».
-Proof. destruct H; [apply ndI | apply ndU | apply ndC | apply ndD | apply ndE | ].
-  -apply (translation_imp _ nd cnd). { intros. reflexivity. } apply translation_fwd. assumption.
-  -apply (translation_univ _ nd cnd). { intros. reflexivity. } apply translation_subst. apply translation_fwd. assumption.
-  -apply (translation_conj _ nd cnd). { intros. reflexivity. } apply translation_fwd. assumption.
-  -apply (translation_disj _ nd cnd _ retract_form_implicative_form). { intros. reflexivity. }
-   apply weakening. apply dni. apply ndD. apply ndI. apply translation_helper. apply translation_fwd. assumption.
-  -apply (translation_exst _ nd cnd _ retract_form_implicative_form). { intros. reflexivity. }
-   apply translation_subst. apply weakening. apply ndE. apply ndI. apply translation_helper. 
-   apply translation_fwd. assumption.
+Proof. destruct H.
+  -eapply (translation_imp _ nd cnd _ _ _ ndI); eauto.
+  -eapply (translation_univ _ nd cnd _ _ _ _ _ ndU); eauto.
+  -eapply (translation_conj _ nd cnd _ _ _ ndC); eauto.
+  -eapply (translation_disj _ nd cnd _ retract_form_implicative_form _ _ _ dni ndD ndI); eauto.
+   exact translation_helper.
+  -eapply (translation_exst _ nd cnd _ retract_form_implicative_form _ _ _ _ _ ndE ndI); eauto.
+   exact translation_helper.
   -destruct H. apply translation_helper. rewrite <- translation_dn. now apply translation_fwd.
+  Unshelve. 3,8: exact translation_subst. 5,7: exact weakening. all: intros; reflexivity.
 Defined.
 
 Fixpoint translation_bwd A (p : form) : A ⊢c «p» <-> A ⊢c p.
 Proof. destruct p; cbn.
   -split.  now apply dne. now apply dni_c.
-  -eapply translation_bwd_imp. apply cndI. apply cut_c. apply translation_bwd.
-  -eapply (translation_bwd_univ _ retract_form_universal_form subst_form ). {intros. reflexivity. }
-   apply cndU. apply cut_c. apply subst_helper. apply cndI. apply translation_bwd.
-  -eapply (translation_bwd_conj). apply cndC. apply translation_bwd.
-  -eapply (translation_bwd_disj). apply weakening_c. apply cndD. apply cndDN. apply cndI. apply translation_bwd.
-  -eapply (translation_bwd_exst _ retract_form_existential_form subst_form).
-    apply weakening_c. apply cndE. apply cndDN. apply cndI. {intros. reflexivity. } apply subst_helper. apply translation_bwd.
+  -eapply translation_bwd_imp; eauto. exact cndI. exact cut_c.
+  -eapply (translation_bwd_univ _ retract_form_universal_form subst_form ); eauto.
+   exact cndU. exact cut_c. exact subst_helper. exact cndI.
+  -eapply translation_bwd_conj; eauto. exact cndC.
+  -eapply translation_bwd_disj; eauto. exact cndD. exact weakening_c. exact cndDN. exact cndI.
+  -eapply (translation_bwd_exst _ retract_form_existential_form subst_form); eauto.
+   exact cndE. exact weakening_c. exact cndDN. exact cndI. exact subst_helper.
 Defined.
 
 Lemma translation_rm_ctx A B p : (A ++ «/B») ⊢c p -> (A ++ B) ⊢c p.

@@ -21,16 +21,15 @@ Section Existential.
   Inductive nd_exst (A : list form) : form -> Prop :=
     | ndEI p t : A ⊢ subst_form (scons t (var_term)) p -> A ⊢_exst (∃ p)
     | ndEE p q : A ⊢ (∃ p) -> p :: (up_ctx A) ⊢ subst_form (S >> var_term) q -> A ⊢_exst q
-    | ndEinj p : A ⊢ p -> A ⊢_exst p
   where "A ⊢_exst p" := (nd_exst A p).
+  Variable agree : forall A p, A ⊢_exst p -> A ⊢ p.
 
   Variable weakening : forall A B p, A ⊢ p -> incl A B -> B ⊢ p.
-  Lemma weakening_exst A B p : A ⊢_exst p -> incl A B -> B ⊢_exst p.
-  Proof. revert B. destruct 1; intro Hinc; [ now apply (ndEI _ p t), (weakening A) | apply (ndEE _ p q) | apply ndEinj].
+  Lemma weakening_exst A B p : A ⊢_exst p -> incl A B -> B ⊢ p.
+  Proof. revert B. destruct 1; intro Hinc; apply agree; [ now apply (ndEI _ p t), (weakening A) | apply (ndEE _ p q) ].
     -now apply (weakening A).
     -apply (weakening (p::up_ctx A)), incl_cons; [assumption | now left | apply incl_tl ].
       unfold up_ctx. now apply incl_map.
-    -now apply (weakening A).
   Defined.
 
   Variable retract_implicative : included form_implicative form.
@@ -43,7 +42,6 @@ Section Existential.
   Notation "«/ A »" := (map translate A).
 
 
-  Variable agree : forall A p, A ⊢_exst p -> A ⊢ p.
   Variable agree_cls : forall A p, nd_classic _ _ nd A p -> A ⊢ p.
   Variable agree_imp : forall A p, nd_imp _ _ nd A p -> A ⊢ p.
   Variable imp_nd : forall A p, nd_imp _ _ nd A p -> A ⊢ p.
@@ -99,10 +97,10 @@ Section translation.
   Variable translation_inj : forall p, «inj p» = translate_exst _ _ _ translate p.
   Variable translation_subst : forall sigma q, «subst_form sigma q» = subst_form sigma «q».
 
+  Variable agree_cnd : forall A p, A ⊢[cnd] p -> cnd A p.
   Variable embed : forall A p, nd A p -> cnd A p.
-  Lemma embed_exst A p : A ⊢[nd] p -> A ⊢[cnd] p.
-  Proof. destruct 1. now apply (ndEI _ _ _ _ _ _ t), embed. apply (ndEE _ _ _ _ _ p); now apply embed.
-   now apply ndEinj,embed.
+  Lemma embed_exst A p : A ⊢[nd] p -> cnd A p.
+  Proof. destruct 1; apply agree_cnd. now apply (ndEI _ _ _ _ _ _ t), embed. apply (ndEE _ _ _ _ _ p); now apply embed.
   Defined.
 
   Variable weakening : forall A B p, nd A p -> incl A B -> nd B p.
@@ -114,26 +112,24 @@ Section translation.
   Qed. *)
   Variable dni : forall A p, nd A p -> nd A (¬¬p).
 
-  Variable agree_cnd : forall A p, A ⊢[cnd] p -> cnd A p.
   Variable agree_nd : forall A p, A ⊢[nd] p -> nd A p. 
   Variable agree_cls : forall A p, nd_classic _ _ cnd A p -> cnd A p.
   Variable agree_imp : forall A p, nd_imp _ _ nd A p -> nd A p.
   Variable translation_helper : forall A p, nd A (¬¬«p») -> nd A «p».
 
   Variable translation : forall A p, cnd A p -> nd «/A» «p».
-  Lemma translation_exst A p: A ⊢[cnd] p -> «/A» ⊢[nd] «p».
+  Lemma translation_exst A p: A ⊢[cnd] p -> nd «/A» «p».
   Proof. destruct 1.
     -rewrite translation_inj. cbn.
-     apply ndEinj,agree_imp,ndII,agree_imp,(ndIE _ _ _ _ (∃«p»)). apply agree_imp,ndHyp. now left.
+     apply agree_imp,ndII,agree_imp,(ndIE _ _ _ _ (∃«p»)). apply agree_imp,ndHyp. now left.
      apply agree_nd. apply (ndEI _ _ _ _ _ _ t). apply (weakening «/A»). 2: now apply incl_tl.
      rewrite <- translation_subst. now apply translation.
-    -apply ndEinj,translation_helper,agree_imp,ndII,agree_imp,(ndIE _ _ _ _ (¬∃«p»)).
+    -apply translation_helper,agree_imp,ndII,agree_imp,(ndIE _ _ _ _ (¬∃«p»)).
      apply (weakening «/A»). 2: now apply incl_tl. apply translation in H. rewrite translation_inj in H. now cbn in H.
      apply agree_imp,ndII,agree_imp,(ndIE _ _ _ _ «q»). apply agree_imp,ndHyp. right. now left.
      apply agree_nd,(ndEE _ _ _ _ _ «p»). apply agree_imp,ndHyp. now left.
      apply (weakening «/p::(up_ctx _ subst_form A)»). rewrite <- translation_subst. now apply translation.
      { unfold incl. destruct 1. now left. unfold up_ctx. repeat rewrite map_cons. do 3 right.
        rewrite <- translation_map in H1. now unfold up_ctx in H1. apply translation_subst. }
-    -now apply ndEinj,translation.
   Defined.
 End translation.
