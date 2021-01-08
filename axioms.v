@@ -112,36 +112,28 @@ Proof. intros H p. unfold cod_map. fext. intros x. now rewrite <- H. Defined.
 Hint Rewrite in_map_iff : FunctorInstances.
 
 
+Require Import Coq.Vectors.Vector.
 
-Inductive vect' A : nat -> Type :=
-  | nil' : vect' A 0
-  | cons' : forall (h:A) (n:nat), vect' A n -> vect' A (S n).
+Definition vect := Vector.t.
+Definition vect_map {A B} (f:A->B) {n} (v : vect A n) : vect B n := Vector.map f v.
 
-Definition vect n t := vect' t n.
+Lemma vect_map_id A: forall n (v : vect A n), vect_map (fun x => x) v = v.
+Proof. induction v. now reflexivity. unfold vect_map in *. cbn. rewrite <- IHv. congruence. Defined.
 
-Definition vect_map {A B} (f:A->B) : forall {n} (v:vect n A), vect n B :=
-  fix map_fix {n} (v : vect' A n) : vect' B n := match v with
-  | (nil' _) => (nil' _)
-  | (cons' _ a _ v') => cons' _ (f a) _ (map_fix v')
-  end.
+Lemma vect_map_ext A B: forall (f g:A->B), (forall a, f a = g a) -> forall n (v : vect A n), vect_map f v = vect_map g v.
+Proof. induction v. now reflexivity. unfold vect_map in *. cbn. rewrite IHv. congruence. Defined.
 
-Lemma vect_map_id A: forall n (v : vect' A n), vect_map (fun x => x) v = v.
-Proof. induction v. now reflexivity. unfold vect_map in *. rewrite <- IHv. congruence. Defined.
-
-Lemma vect_map_ext A B: forall (f g:A->B), (forall a, f a = g a) -> forall n (v : vect' A n), vect_map f v = vect_map g v.
-Proof. induction v. now reflexivity. unfold vect_map in *. rewrite IHv. congruence. Defined.
-
-Lemma vect_map_map A B C: forall (f:A->B) (g:B->C) n (v : vect' A n), vect_map g (vect_map f v) = vect_map (fun x => g (f x)) v.
-Proof. induction v. now reflexivity. unfold vect_map in *. rewrite IHv. congruence. Defined.
+Lemma vect_map_map A B C: forall (f:A->B) (g:B->C) n (v : vect A n), vect_map g (vect_map f v) = vect_map (fun x => g (f x)) v.
+Proof. induction v. now reflexivity. unfold vect_map in *. cbn. rewrite IHv. congruence. Defined.
 
 Definition vect_id {A} {f : A -> A} {n} :
-  (forall x, f x = x) -> forall (v : vect n A), vect_map f v = v.
+  (forall x, f x = x) -> forall (v : vect A n), vect_map f v = v.
 Proof. intros H v. unfold vect_map. rewrite <- vect_map_id. now apply vect_map_ext. Defined.
 
 Definition vect_ext {A B} {f f' : A -> B} {n} :
-  (forall x, f x = f' x) -> forall (v: vect n A), vect_map f v = vect_map f' v.
+  (forall x, f x = f' x) -> forall (v: vect A n), vect_map f v = vect_map f' v.
 Proof. intros H v. unfold vect_map. now apply vect_map_ext. Defined.
 
 Definition vect_comp {A B C} {f : A -> B} {g : B -> C} {n} {h} :
-  (forall x, (funcomp g f) x =  h x) -> forall (v: vect n _), vect_map g (vect_map f v) = vect_map h v.
+  (forall x, (funcomp g f) x =  h x) -> forall (v: vect _ n), vect_map g (vect_map f v) = vect_map h v.
 Proof. intros H v. rewrite vect_map_map. now apply vect_ext. Defined.

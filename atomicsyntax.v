@@ -15,14 +15,14 @@ Variable ext_form : forall   (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -
 Variable compSubstSubst_form : forall    (sigmaterm : ( fin ) -> term ) (tauterm : ( fin ) -> term ) (thetaterm : ( fin ) -> term ) (Eqterm : forall x, ((funcomp) (subst_term tauterm) sigmaterm) x = thetaterm x) (s : form ), subst_form tauterm (subst_form sigmaterm s) = subst_form thetaterm s.
 
 Inductive form_atomic  : Type :=
-  | Pred : forall (p : Preds), ( vect (pred_ar p) (term  ) ) -> form_atomic .
+  | Pred : forall (p : Preds), ( vect term (pred_ar p) ) -> form_atomic .
 
 Variable retract_form_atomic : retract form_atomic form.
 
-Definition Pred_ (p : Preds) (s0 : vect (pred_ar p) (term  )) : _ :=
+Definition Pred_ (p : Preds) (s0 : vect term (pred_ar p)) : _ :=
   inj (Pred p s0).
 
-Lemma congr_Pred_ { p : Preds }  { s0 : vect (pred_ar p) (term  ) } { t0 : vect (pred_ar p) (term  ) } (H1 : s0 = t0) : Pred_  p s0 = Pred_  p t0 .
+Lemma congr_Pred_ { p : Preds }  { s0 : vect term (pred_ar p) } { t0 : vect term (pred_ar p) } (H1 : s0 = t0) : Pred_  p s0 = Pred_  p t0 .
 Proof. congruence. Qed.
 
 (* Variable retract_ren_form : forall   (xiterm : ( fin ) -> fin) s, ren_form xiterm (inj s) = ren_form_atomic xiterm s. *)

@@ -7,9 +7,9 @@ Context {Sigma : Signature}.
 
 Inductive term  : Type :=
   | var_term : ( fin ) -> term 
-  | Func : forall (f : Funcs), ( vect (fun_ar f) (term  ) ) -> term .
+  | Func : forall (f : Funcs), ( vect term (fun_ar f) ) -> term .
 
-Lemma congr_Func { f : Funcs }  { s0 : vect (fun_ar f) (term  ) } { t0 : vect (fun_ar f) (term  ) } (H1 : s0 = t0) : Func  f s0 = Func  f t0 .
+Lemma congr_Func { f : Funcs }  { s0 : vect term (fun_ar f) } { t0 : vect term (fun_ar f) } (H1 : s0 = t0) : Func  f s0 = Func  f t0 .
 Proof. congruence. Defined.
 
 Fixpoint subst_term   (sigmaterm : ( fin ) -> term ) (s : term ) : term  :=
