@@ -26,4 +26,27 @@ Section classical.
 
 End classical.
 
+
+Section translation.
+
+  Variable form : Type.
+  Variable nd : list form -> form -> Prop.
+  Variable cnd : list form -> form -> Prop.
+  Variable retract_implicative : included form_implicative form.
+
+  Notation "A ⊢[ nd ] p" := (@nd_classic form _ nd A p) (at level 70).
+  Variable translate : form -> form.
+  Notation "« p »" := (translate p).
+  Notation "«/ A »" := (map translate A).
+
+  Variable translation_helper : forall A p, nd A (¬¬«p») -> nd A «p».
+  Variable translation_dn : forall p, «¬¬p» = ¬¬«p».
+
+  Variable translation : forall A p, cnd A p -> nd «/A» «p».
+  Lemma translation_cls A p: A ⊢[cnd] p -> nd «/A» «p».
+  Proof. destruct 1. apply translation_helper. rewrite <- translation_dn. now apply translation.
+  Defined.
+
+End translation.
+
 Notation "A ⊢_c p" := (nd_classic A p) (at level 70).

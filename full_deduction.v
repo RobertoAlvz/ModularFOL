@@ -91,9 +91,6 @@ Proof. destruct p.
   -eapply translation_helper_exst. exact ndI. apply cut.
 Defined.
 
-Lemma translation_dn p : «¬¬p» = ¬¬«p».
-Proof. now reflexivity. Defined.
-
 Lemma dni A p : A ⊢ p -> A ⊢ (¬¬p).
 Proof. intro. apply ndI, ndII, ndI, (ndIE _ _ _ _ p).
   -apply ndI,ndHyp. now left.
@@ -127,7 +124,8 @@ Proof. destruct H.
    exact translation_helper.
   -eapply (translation_exst _ nd cnd _ retract_form_implicative_form _ _ _ _ _ ndE ndI); eauto.
    exact translation_helper.
-  -destruct H. apply translation_helper. rewrite <- translation_dn. now apply translation_fwd.
+  -eapply (translation_cls _ nd cnd); eauto.
+   exact translation_helper.
   Unshelve. 3,8: exact translation_subst. 5,7: exact weakening. all: intros; reflexivity.
 Defined.
 
