@@ -7,7 +7,7 @@ make
 ```
 ## Overview 
 
-This project proves the equivalence between classic and intuitionistic first order logic using deduction predicates defined over modular syntax.
+This project verifies a modular double-negation translation from classical to intuitionistic logic.
 
 The individual features of the syntax are contained in `*syntax.v` files, which are customized from output of autosubst2, with `syntax.sig` as input.
 
